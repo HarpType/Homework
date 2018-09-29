@@ -9,19 +9,6 @@ namespace LazyTest
     public class UnitTest1
     {
         [TestMethod, TestCategory("A")]
-        public void TestAdd()
-        {
-            int Add()
-            {
-                return 10 + 25;
-            }
-
-            SimpleLazy<int> simpleLazy = LazyFactory.CreateSimpleLazy(Add);
-
-            Assert.AreEqual(Add(), simpleLazy.Get);
-        }
-
-        [TestMethod, TestCategory("A")]     
         public void TestBinpow()
         {
             int Binpow()
@@ -44,9 +31,29 @@ namespace LazyTest
 
             }
 
-            SimpleLazy<int> simpleLazy = LazyFactory.CreateSimpleLazy(Binpow);
+            SimpleLazy<int> binpowLazy = LazyFactory.CreateSimpleLazy(Binpow);
 
-            Assert.AreEqual(Binpow(), simpleLazy.Get);
+            Assert.AreEqual(Binpow(), binpowLazy.Get);
+        }
+
+        [TestMethod, TestCategory("A")]
+        public void RandomTest()
+        {
+            int GetRandom()
+            {
+                Random random = new Random();
+                int randomRes = random.Next(50, 1000);
+
+                return randomRes;
+            }
+
+            SimpleLazy<int> randomLazy = LazyFactory.CreateSimpleLazy(GetRandom);
+
+            int result = randomLazy.Get;
+
+            const int n = 10;
+            for (int i = 0; i < n; ++i)
+                Assert.AreEqual(result, randomLazy.Get);
         }
 
         [TestMethod, TestCategory("A")]
@@ -65,35 +72,23 @@ namespace LazyTest
         [TestMethod, TestCategory("A")]
         public void ThreadTest()
         {
-            int Binpow()
+            string HelloFunc()
             {
-                int a = 3;
-                int k = 8;
-
-                int res = 1;
-                while (k != 0)
-                {
-                    if (k % 2 == 1)
-                        res *= a;
-
-                    a *= a;
-
-                    k /= 2;
-                }
-
-                return res;
+                return "Hello";
 
             }
 
             const int n = 10;
-            SafeLazy<int> safeLazy = LazyFactory.CreateSafeLazy(Binpow);
+            SafeLazy<string> helloLazy = LazyFactory.CreateSafeLazy(HelloFunc);
+
+            string[] resStrings = new string[n];
 
             Thread[] threads = new Thread[n];
 
             for (int i = 0; i < n; ++i)
             {
                 int k = i;
-                threads[i] = new Thread(() => { int res = safeLazy.Get; });
+                threads[i] = new Thread(() => { resStrings[k] = helloLazy.Get; });
             }
 
             foreach (Thread thread in threads)
@@ -106,7 +101,8 @@ namespace LazyTest
                 thread.Join();
             }
 
-            Assert.AreEqual(Binpow(), safeLazy.Get);
+            for (int i = 0; i < n; ++i)
+                Assert.AreEqual(HelloFunc(), resStrings[i]);
         }
 
         [TestMethod, TestCategory("A")]
@@ -125,6 +121,8 @@ namespace LazyTest
 
             const int n = 10;
 
+            int[,] resultMatrix = new int[n, n];
+
             Thread[] threads = new Thread[n];
 
             for (int i = 0; i < n; ++i)
@@ -132,13 +130,13 @@ namespace LazyTest
                 threads[i] = new Thread(() =>
                 {
                     Random random = new Random();
-                    const int k = 15;
-
                     Thread.Sleep(random.Next(0, 100) * 10);
 
-                    for (int j = 0; j < k; ++j)
+                    int k = i;
+
+                    for (int j = 0; j < n; ++j)
                     {
-                        int res = safeLazy.Get;
+                        resultMatrix[k, j] = safeLazy.Get;
                     }
                 });
             }
@@ -149,8 +147,10 @@ namespace LazyTest
             foreach (Thread thread in threads)
                 thread.Join();
 
-            int result = safeLazy.Get;
-            Assert.AreEqual(result, safeLazy.Get);
+            int result = resultMatrix[0, 0];
+            for (int i = 0; i < n; ++i)
+                for (int j = 0; j < n; ++j)
+                    Assert.AreEqual(result, resultMatrix[i, j]);
         }
     }
 }
