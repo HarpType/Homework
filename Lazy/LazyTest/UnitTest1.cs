@@ -8,7 +8,7 @@ namespace LazyTest
     [TestClass]
     public class UnitTest1
     {
-        [TestMethod]
+        [TestMethod, TestCategory("A")]
         public void TestAdd()
         {
             int Add()
@@ -21,7 +21,7 @@ namespace LazyTest
             Assert.AreEqual(Add(), simpleLazy.Get);
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("A")]     
         public void TestBinpow()
         {
             int Binpow()
@@ -49,7 +49,7 @@ namespace LazyTest
             Assert.AreEqual(Binpow(), simpleLazy.Get);
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("A")]
         public void LazyNullTest()
         {
             bool? NullSupplier()
@@ -62,7 +62,7 @@ namespace LazyTest
             Assert.AreEqual(null, simpleLazy.Get);
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("A")]
         public void ThreadTest()
         {
             int Binpow()
@@ -109,7 +109,7 @@ namespace LazyTest
             Assert.AreEqual(Binpow(), safeLazy.Get);
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("A")]
         public void SleepingThreadsTest()
         {
             int GetRandom()
