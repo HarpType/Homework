@@ -130,11 +130,10 @@ namespace LazyTest
 
             for (int i = 0; i < n; ++i)
             {
+                int k = i;
                 threads[i] = new Thread(() =>
                 {
                     Thread.Sleep(random.Next(0, 100) * 10);
-
-                    int k = i;
 
                     for (int j = 0; j < n; ++j)
                     {
