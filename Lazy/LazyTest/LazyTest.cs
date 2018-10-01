@@ -115,8 +115,6 @@ namespace LazyTest
         {
             int GetRandom()
             {
-                Random random = new Random();
-
                 int res = random.Next(0, 100);
 
                 return res;
@@ -134,7 +132,6 @@ namespace LazyTest
             {
                 threads[i] = new Thread(() =>
                 {
-                    Random random = new Random();
                     Thread.Sleep(random.Next(0, 100) * 10);
 
                     int k = i;
