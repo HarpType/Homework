@@ -34,7 +34,6 @@ namespace Lazy
                         if (!this.hasValue)
                         {
                             this.result = this.supplier();
-
                             this.hasValue = true;
 
                             this.supplier = null;

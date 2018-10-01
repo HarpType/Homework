@@ -28,6 +28,8 @@ namespace Lazy
                 {
                     this.result = this.supplier();
                     this.hasValue = true;
+
+                    this.supplier = null;
                 }
 
                 return this.result;
