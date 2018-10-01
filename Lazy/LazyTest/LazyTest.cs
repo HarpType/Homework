@@ -6,8 +6,15 @@ using Lazy;
 namespace LazyTest
 {
     [TestClass]
-    public class UnitTest1
+    public class LazyTest
     {
+        private Random random;
+
+        public LazyTest()
+        {
+            random = new Random();
+        }
+
         [TestMethod, TestCategory("A")]
         public void TestBinpow()
         {
@@ -41,8 +48,7 @@ namespace LazyTest
         {
             int GetRandom()
             {
-                Random random = new Random();
-                int randomRes = random.Next(50, 1000);
+                int randomRes = this.random.Next(50, 1000);
 
                 return randomRes;
             }
