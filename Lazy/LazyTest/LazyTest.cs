@@ -48,7 +48,7 @@ namespace LazyTest
         {
             int GetRandom()
             {
-                int randomRes = this.random.Next(50, 1000);
+                int randomRes = this.random.Next(50, 100);
 
                 return randomRes;
             }
@@ -59,20 +59,19 @@ namespace LazyTest
 
             const int n = 10;
             for (int i = 0; i < n; ++i)
+            {
                 Assert.AreEqual(result, randomLazy.Get);
+            }
         }
 
         [TestMethod, TestCategory("A")]
         public void LazyNullTest()
         {
-            bool? NullSupplier()
-            {
-                return null;
-            }
+            Func<Object> NullSupplier() => null;
 
-            SimpleLazy<bool?> simpleLazy = LazyFactory.CreateSimpleLazy(NullSupplier);
+            SimpleLazy<Object> simpleLazy = LazyFactory.CreateSimpleLazy<Object>(NullSupplier);
 
-            Assert.AreEqual(null, simpleLazy.Get);
+            Assert.IsNull(simpleLazy.Get);
         }
 
         [TestMethod, TestCategory("A")]
@@ -148,15 +147,24 @@ namespace LazyTest
             }
 
             foreach (Thread thread in threads)
+            {
                 thread.Start();
+            }
 
             foreach (Thread thread in threads)
+            {
                 thread.Join();
+            }
 
             int result = resultMatrix[0, 0];
+
             for (int i = 0; i < n; ++i)
+            {
                 for (int j = 0; j < n; ++j)
+                {
                     Assert.AreEqual(result, resultMatrix[i, j]);
+                }
+            }
         }
     }
 }

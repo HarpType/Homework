@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Lazy
 {
+    /// <summary>
+    /// Класс SafeLazy служит для безопасной работы с ленивыми вычислениями в многопоточном режиме.
+    /// </summary>
     public class SafeLazy<T> : ILazy<T>
     {
         private Func<T> supplier;
@@ -20,7 +18,10 @@ namespace Lazy
             this.supplier = supplier;
             this.hasValue = false;
         }
-
+        
+        /// <summary>
+        /// Инициализирует и возвращает результат ленивого вычисления.
+        /// </summary>
         public T Get
         {
             get
@@ -33,7 +34,10 @@ namespace Lazy
                         if (!this.hasValue)
                         {
                             this.result = this.supplier();
+
                             this.hasValue = true;
+
+                            this.supplier = null;
                         }
                     }
                 }

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lazy
+﻿namespace Lazy
 {
+    /// <summary>
+    /// Интерфейс ILazy представляет ленивые вычисления.
+    /// </summary>
+    /// <typeparam name="T">Тип вычисления, возвращаемый ленивой функцией.</typeparam>
     public interface ILazy<T>
     {
-        // Property
         T Get { get; }  
     }
 }
