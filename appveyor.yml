@@ -1,0 +1,11 @@
+version: 1.0.{build}
+
+image: Visual Studio 2017
+
+environment:
+    matrix:
+    - solution_name: MyThreadPool/MyThreadPool.sln
+    - solution_name: Lazy/Lazy.sln
+    
+build_script:
+    - msbuild MyThreadPool.sln
