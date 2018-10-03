@@ -1,3 +1,0 @@
-environment:
-    matrix:
-    -solution_name: MyThreadPool/MyThreadPool.sln
