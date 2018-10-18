@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace MyThreadPool
 {
     /// <summary>
-    /// This interface describes properties and methods of tasks used by thread pool.
+    /// Представляет задачу, принятую к исполнению потоком.
     /// </summary>
-    /// <typeparam name="TResult">Type of tasks result.</typeparam>
+    /// <typeparam name="TResult">Тип, возвращаемый задачей.</typeparam>
     interface IMyTask<TResult>
     {
         bool IsCompleted { get; }
