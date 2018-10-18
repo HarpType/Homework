@@ -1,0 +1,13 @@
+version: 1.0.{build}
+
+image: Visual Studio 2017
+
+environment:
+  matrix:
+    - solution_name: Lazy/Lazy.sln
+
+before_build:
+  - cmd: nuget restore Lazy/Lazy.sln
+
+build_script:
+  - msbuild Lazy/Lazy.sln
