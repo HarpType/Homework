@@ -6,7 +6,7 @@ namespace MyThreadPool
 {
     public class MyThreadPool
     {
-        private Queue<Action> que;
+        private Queue<Action> que = new Queue<Action>();
         private Thread[] threads;
 
         /// <summary>
@@ -56,6 +56,7 @@ namespace MyThreadPool
         {
             void action()
             {
+                Console.WriteLine("HELLO YAR");
                 TResult reusult = task.Result;
             }
 

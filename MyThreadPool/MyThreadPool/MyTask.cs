@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyThreadPool
 {
@@ -11,7 +7,7 @@ namespace MyThreadPool
         public bool IsCompleted { get; private set; }
 
         private TResult result;
-        private Func<TResult> func;
+        private readonly Func<TResult> func;
 
         /// <summary>
         /// Конструктор класса задач.
@@ -28,7 +24,11 @@ namespace MyThreadPool
             get
             {
                 // TODO: Потокобезопасность
-                this.result = this.func();
+                if (!IsCompleted)
+                {
+                    this.result = this.func();
+                    this.IsCompleted = true;
+                }
 
                 return this.result;
             }
