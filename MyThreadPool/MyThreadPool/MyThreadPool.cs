@@ -36,7 +36,7 @@ namespace MyThreadPool
         /// <returns></returns>
         public MyTask<TResult> AddTask<TResult>(Func<TResult> func)
         {
-            MyTask<TResult> newTask = new MyTask<TResult>(func);
+            MyTask<TResult> newTask = new MyTask<TResult>(func, this.que);
 
             Action action = Wrapper<TResult>(newTask);
 
@@ -56,8 +56,7 @@ namespace MyThreadPool
         {
             void action()
             {
-                Console.WriteLine("HELLO YAR");
-                TResult reusult = task.Result;
+                TResult result = task.Result;
             }
 
             return action;

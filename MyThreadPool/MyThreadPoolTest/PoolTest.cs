@@ -22,5 +22,23 @@ namespace MyThreadPoolTest
             Thread.Sleep(2000);
             Assert.AreEqual("Hello", helloTask.Result);
         }
+
+        [TestMethod]
+        public void SimpleContinueTest()
+        {
+            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(2);
+
+            string SayHello() => "Hello";
+
+            MyTask<string> helloTask = threadPool.AddTask<string>(SayHello);
+
+            string SayWorld(string str) => str + " World!";
+
+            MyTask<string> helloworldTask = helloTask.ContinueWith<string>(SayWorld);
+
+            //Thread.Sleep(2000);
+            Assert.AreEqual("Hello", helloTask.Result);
+            Assert.AreEqual("Hello World!", helloworldTask.Result);
+        }
     }
 }
