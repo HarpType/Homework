@@ -13,7 +13,7 @@ namespace MyThreadPool
         CancellationTokenSource cts = new CancellationTokenSource();
         CancellationToken token;
 
-        private SafeQueue<Action> que = new SafeQueue<Action>();
+        private SafeQueue<Action> taskQueue = new SafeQueue<Action>();
         private Thread[] threads;
 
         /// <summary>
@@ -22,17 +22,17 @@ namespace MyThreadPool
         /// <param name="n">Количество запускаемых потоков.</param>
         public MyThreadPool(int n)
         {
-            this.token = cts.Token;
+            token = cts.Token;
 
             threads = new Thread[n];
 
             for (int i = 0; i < n; ++i)
             {
-                threads[i] = new Thread(this.Run);
+                threads[i] = new Thread(Run);
                 threads[i].IsBackground = true;
             }
 
-            foreach (var thread in threads)
+            foreach (Thread thread in threads)
             {
                 thread.Start();
             }
@@ -41,12 +41,11 @@ namespace MyThreadPool
         /// <summary>
         /// Добавляет задачу в очередь.
         /// </summary>
-        /// <typeparam name="TResult">Тип возвращаемого значения.</typeparam>
+        /// <typeparam name="TResult">Тип возвращаемого функцией значения.</typeparam>
         /// <param name="func">Функция, которую необходимо вычислить.</param>
-        /// <returns></returns>
         public MyTask<TResult> AddTask<TResult>(Func<TResult> func)
         {
-            MyTask<TResult> newTask = new MyTask<TResult>(func, this.que);
+            MyTask<TResult> newTask = new MyTask<TResult>(func, taskQueue);
 
             Action action =
                 () =>
@@ -54,13 +53,13 @@ namespace MyThreadPool
                     TResult result = newTask.Result;
                 };
 
-            que.Enqueue(action);
+            taskQueue.Enqueue(action);
 
             return newTask;
         }
 
         /// <summary>
-        /// Метод, который постоянное исполняется в потоках.
+        /// Метод, который постоянно исполняется в каждом из потоков.
         /// В бесконечном цикле происходит проверка завершения пула потоков. 
         /// После проверки каждый свободный поток пытается взять для себя 
         /// новую задачу из очереди и, если таковая имеется, исполняет её.
@@ -74,14 +73,14 @@ namespace MyThreadPool
                     return;
                 }
 
-                if (que.Size != 0)
+                if (taskQueue.Size != 0)
                 {
                     Action action;
                     lock (lockObject)
                     {
-                        if (que.Size != 0)
+                        if (taskQueue.Size != 0)
                         {
-                            action = que.Dequeue();
+                            action = taskQueue.Dequeue();
                         }
                         else
                         {
@@ -117,7 +116,7 @@ namespace MyThreadPool
         public int AliveThreadsCount()
         {
             int count = 0;
-            foreach (var thread in this.threads)
+            foreach (var thread in threads)
             {
                 if (thread.IsAlive)
                 {

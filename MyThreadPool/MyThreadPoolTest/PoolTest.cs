@@ -124,6 +124,8 @@ namespace MyThreadPoolTest
             Assert.AreEqual(1, threadPool.AliveThreadsCount());
             Assert.AreEqual(Pow(), heavyTask.Result);
 
+            Thread.Sleep(500);
+            Assert.AreEqual(0, threadPool.AliveThreadsCount());
         }
 
         [TestMethod]

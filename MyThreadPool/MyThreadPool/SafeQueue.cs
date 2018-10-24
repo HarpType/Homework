@@ -10,7 +10,7 @@ namespace MyThreadPool
     {
         private Queue<T> queue = new Queue<T>();
 
-        private Object lockObject = new object();
+        private object lockObject = new object();
 
         /// <summary>
         /// Безопасное занесение элемента в очередь.
@@ -18,7 +18,7 @@ namespace MyThreadPool
         /// <param name="el">Новый элемент для занесения в очередь.</param>
         public void Enqueue(T el)
         {
-            lock (this.lockObject)
+            lock (lockObject)
             {
                 queue.Enqueue(el);
             }
@@ -30,7 +30,7 @@ namespace MyThreadPool
         public T Dequeue()
         {
             T el;
-            lock (this.lockObject)
+            lock (lockObject)
             {
                 el = queue.Dequeue();
             }

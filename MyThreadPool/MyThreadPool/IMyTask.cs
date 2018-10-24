@@ -9,12 +9,12 @@ namespace MyThreadPool
     interface IMyTask<TResult>
     {
         /// <summary>
-        /// Возвращает true в случае, если задача выполнена. false в противном случае.
+        /// Возвращает true в случае, если задача выполнена.
         /// </summary>
         bool IsCompleted { get; }
 
         /// <summary>
-        /// Предоставляет результат выполненной задачи.
+        /// Свойство предоставляет результат вычисления задачи.
         /// </summary>
         TResult Result { get; }
 

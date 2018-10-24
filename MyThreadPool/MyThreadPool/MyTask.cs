@@ -7,16 +7,16 @@ namespace MyThreadPool
     {
         AggregateException aggException = null;
 
-        private Object lockObject = new object();
+        private object lockObject = new object();
 
-        private volatile bool hasValue;
+        private volatile bool hasValue = false;
         public bool IsCompleted { get { return hasValue; } }
 
         private TResult result;
         private Func<TResult> func;
 
         private SafeQueue<Action> poolQue;
-        private Queue<Action> nextActions = new Queue<Action>();
+        private SafeQueue<Action> nextActions = new SafeQueue<Action>();
 
         /// <summary>
         /// Конструктор класса задач.
@@ -26,7 +26,6 @@ namespace MyThreadPool
         public MyTask(Func<TResult> func, SafeQueue<Action> poolQue)
         {
             this.func = func;
-            this.hasValue = false;
 
             this.poolQue = poolQue;
         }
@@ -34,12 +33,11 @@ namespace MyThreadPool
         public MyTask(Func<TResult> func)
         {
             this.func = func;
-            this.hasValue = false;
         }
 
         /// <summary>
-        /// Добавляет в очередь функций новую, которая опирается на результатах
-        /// текущей функции.
+        /// Добавляет в очередь задач новую, которая опирается на результатах
+        /// текущей.
         /// </summary>
         /// <typeparam name="TNewResult">Тип новых вычислений.</typeparam>
         /// <param name="func">Функция, описывающая новые вычисления.</param>
@@ -48,12 +46,12 @@ namespace MyThreadPool
         {
             TNewResult supplier()
             {
-                TNewResult result = func(this.Result);
+                TNewResult result = func(Result);
 
                 return result;
             }
 
-            MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, this.poolQue);
+            MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, poolQue);
 
             Action action =
                 () =>
@@ -61,10 +59,10 @@ namespace MyThreadPool
                     TNewResult result = nextTask.Result;
                 };
 
-            if (this.hasValue)
+            if (hasValue)
             {
                 poolQue.Enqueue(action);
-                if (!this.hasValue)
+                if (!hasValue)
                     AddActionsToPool();
             }
             else
@@ -79,44 +77,44 @@ namespace MyThreadPool
         /// <summary>
         /// Свойство, возвращающее результат вычислений. Организует потокобезопасное ленивое вычисление
         /// заданной функции. После вычисления результатов добавляет все зависимые вычисления в пул потоков.
-        /// Если функция имеет исключение, то при первом вызове он будет помещён aggException. 
+        /// Если функция имеет исключение, то при первом вызове исключение будет помещено в aggException. 
         /// При последующих вызовах исключение возвращается без вычисления функции.
         /// </summary>
         public TResult Result
         {
             get
             {
-                if (this.aggException != null)
+                if (aggException != null)
                 {
-                    throw this.aggException;
+                    throw aggException;
                 }
 
-                if (!this.hasValue)
+                if (!hasValue)
                 {
-                    lock (this.lockObject)
+                    lock (lockObject)
                     {
-                        if (!this.hasValue)
+                        if (!hasValue)
                         {
                             try
                             {
-                                this.result = this.func();
+                                result = func();
                             }
                             catch (Exception ex)
                             {
-                                this.aggException = new AggregateException(ex);
+                                aggException = new AggregateException(ex);
 
-                                throw this.aggException;
+                                throw aggException;
                             }
 
-                            this.hasValue = true;
-                            this.func = null;
+                            hasValue = true;
+                            func = null;
 
                             AddActionsToPool();
                         }
                     }
                 }
 
-                return this.result;
+                return result;
             }
         }
 
@@ -125,7 +123,7 @@ namespace MyThreadPool
         /// </summary>
         public void AddActionsToPool()
         {
-            while (this.nextActions.Count != 0)
+            while (nextActions.Size != 0)
             {
                 Action action = nextActions.Dequeue();
                 poolQue.Enqueue(action);
