@@ -5,23 +5,26 @@ namespace MyThreadPool
 {
     public class MyTask<TResult> : IMyTask<TResult>
     {
-        public bool IsCompleted { get; private set; }
+        private Object lockObject = new object();
+
+        private volatile bool hasValue;
+        public bool IsCompleted { get { return hasValue; } }
 
         private TResult result;
         private Func<TResult> func;
 
-        private Queue<Action> poolQue;
-        private Queue<Action> nextActions = new Queue<Action>();
+        private SafeQueue<Action> poolQue;
+        private SafeQueue<Action> nextActions = new SafeQueue<Action>();
 
         /// <summary>
         /// Конструктор класса задач.
         /// </summary>
         /// <param name="func">Функция для вычисления.</param>
         /// <param name="poolQue">Ссылка на очередь пула.</param>
-        public MyTask(Func<TResult> func, Queue<Action> poolQue)
+        public MyTask(Func<TResult> func, SafeQueue<Action> poolQue)
         {
             this.func = func;
-            this.IsCompleted = false;
+            this.hasValue = false;
 
             this.poolQue = poolQue;
         }
@@ -46,26 +49,41 @@ namespace MyThreadPool
             
             Action action = Wrapper(nextTask);
 
-            poolQue.Enqueue(action);
+            if (this.hasValue)
+            {
+                poolQue.Enqueue(action);
+            }
+            else
+            {
+                nextActions.Enqueue(action);
+            }
 
             return nextTask;
         }
 
+
+        /// <summary>
+        /// Свойство, возвращающее результат вычислений. Организует потокобезопасное ленивое вычислений
+        /// заданной функции. После вычисления результатов добавляет все зависимые вычисления в пул потоков.
+        /// </summary>
         public TResult Result
         {
             get
             {
-                // TODO: Потокобезопасность
-                // Добавить ожидание главного потока при вызове, когда функция
-                // вычисляется в threadpool (см первую работу)
-                if (!IsCompleted)
+                if (!this.hasValue)
                 {
-                    this.result = this.func();
-                    this.IsCompleted = true;
+                    lock (this.lockObject)
+                    {
+                        if (!this.hasValue)
+                        {
+                            this.result = this.func();
+                            this.hasValue = true;
 
-                    AddActionsToPool();
+                            AddActionsToPool();
 
-                    this.func = null;
+                            this.func = null;
+                        }
+                    }
                 }
 
                 return this.result;
@@ -77,7 +95,7 @@ namespace MyThreadPool
         /// </summary>
         public void AddActionsToPool()
         {
-            while (this.nextActions.Count != 0)
+            while (this.nextActions.Size != 0)
             {
                 Action action = nextActions.Dequeue();
                 poolQue.Enqueue(action);

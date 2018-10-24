@@ -24,21 +24,69 @@ namespace MyThreadPoolTest
         }
 
         [TestMethod]
-        public void SimpleContinueTest()
+        public void SimpleContinueWithTest()
         {
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(2);
+            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(1);
 
             string SayHello() => "Hello";
-
             MyTask<string> helloTask = threadPool.AddTask<string>(SayHello);
 
             string SayWorld(string str) => str + " World!";
-
             MyTask<string> helloworldTask = helloTask.ContinueWith<string>(SayWorld);
 
-            //Thread.Sleep(2000);
+            Thread.Sleep(500);
             Assert.AreEqual("Hello", helloTask.Result);
             Assert.AreEqual("Hello World!", helloworldTask.Result);
+        }
+
+        [TestMethod]
+        public void ThreadsCountTest()
+        {
+            const int n = 5;
+            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
+
+            Assert.AreEqual(n, threadPool.AliveThreadsCount());
+        }
+
+        [TestMethod]
+        public void BigPoolTest()
+        {
+            const int n = 3;
+            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
+
+            string SayHello() => "Hello";
+            string SayHelloWorld(string hello) => hello + " world!";
+
+            int TakeFive() => 5;
+            int Add(int number) => number + 15;
+
+            bool GetTrue() => true;
+            string MakeChoice(bool b) => b ? "Good" : "Bad";
+            string Introduce(string str) => str + " boy";
+
+            MyTask<string> helloTask = threadPool.AddTask(SayHello);
+            MyTask<int> takefiveTask = threadPool.AddTask(TakeFive);
+            MyTask<bool> gettrueTask = threadPool.AddTask(GetTrue);
+
+            MyTask<string> helloworldTask = helloTask.ContinueWith(SayHelloWorld);
+            MyTask<int> addTask = takefiveTask.ContinueWith(Add);
+            MyTask<string> choiceTask = gettrueTask.ContinueWith(MakeChoice);
+
+            MyTask<string> introduceTask = choiceTask.ContinueWith(Introduce);
+
+
+            Assert.AreEqual("Hello", helloTask.Result);
+            Assert.AreEqual(5, takefiveTask.Result);
+            Assert.AreEqual(true, gettrueTask.Result);
+            Assert.AreEqual(n, threadPool.AliveThreadsCount());
+
+            Assert.AreEqual("Hello world!", helloworldTask.Result);
+            Assert.AreEqual(20, addTask.Result);
+            Assert.AreEqual("Good", choiceTask.Result);
+            Assert.AreEqual(n, threadPool.AliveThreadsCount());
+
+            Assert.AreEqual("Good boy", introduceTask.Result);
+            Assert.AreEqual(n, threadPool.AliveThreadsCount());
         }
     }
 }

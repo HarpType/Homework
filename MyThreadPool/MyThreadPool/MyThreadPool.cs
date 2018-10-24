@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace MyThreadPool
 {
     public class MyThreadPool
     {
-        private Queue<Action> que = new Queue<Action>();
+        private SafeQueue<Action> que = new SafeQueue<Action>();
         private Thread[] threads;
 
         /// <summary>
@@ -20,6 +19,7 @@ namespace MyThreadPool
             for (int i = 0; i < n; ++i)
             {
                 threads[i] = new Thread(Run);
+                threads[i].IsBackground = true;
             }
 
             foreach (var thread in threads)
@@ -64,19 +64,32 @@ namespace MyThreadPool
 
 
         /// <summary>
-        /// Метод, который исполняет один из потоков.
+        /// Метод, который постоянное исполняется в потоках.
         /// </summary>
         private void Run()
         {
-            // TODO: Потокобезопасность извлечения из очереди.
             while (true)
             {
-                if (que.Count != 0)
+                if (que.Size != 0)
                 {
                     Action action = que.Dequeue();
                     action();
                 }
             }
+        }
+
+        public int AliveThreadsCount()
+        {
+            int count = 0;
+            foreach (var thread in this.threads)
+            {
+                if (thread.IsAlive)
+                {
+                    count += 1;
+                }
+            }
+
+            return count;
         }
     }
 }
