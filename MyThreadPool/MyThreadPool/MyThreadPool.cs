@@ -5,6 +5,11 @@ namespace MyThreadPool
 {
     public class MyThreadPool
     {
+        Object lockObject = new object();
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+        CancellationToken token;
+
         private SafeQueue<Action> que = new SafeQueue<Action>();
         private Thread[] threads;
 
@@ -14,6 +19,7 @@ namespace MyThreadPool
         /// <param name="n">Количество запускаемых потоков.</param>
         public MyThreadPool(int n)
         {
+            this.token = cts.Token;
             threads = new Thread[n];
 
             for (int i = 0; i < n; ++i)
@@ -70,14 +76,45 @@ namespace MyThreadPool
         {
             while (true)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 if (que.Size != 0)
                 {
-                    Action action = que.Dequeue();
-                    action();
+                    Action action;
+                    lock (lockObject)
+                    {
+                        if (que.Size != 0)
+                        {
+                            action = que.Dequeue();
+                        }
+                        else
+                        {
+                            action = null;
+                        }
+                    }
+
+                    if (action != null)
+                    {
+                        action();
+                    }
                 }
             }
         }
 
+        public void Shutdown()
+        {
+            cts.Cancel();
+            cts.Dispose();
+        }
+
+
+        /// <summary>
+        /// Считает все живые потоки.
+        /// </summary>
+        /// <returns>Возвращает количество живых потоков.</returns>
         public int AliveThreadsCount()
         {
             int count = 0;

@@ -88,5 +88,43 @@ namespace MyThreadPoolTest
             Assert.AreEqual("Good boy", introduceTask.Result);
             Assert.AreEqual(n, threadPool.AliveThreadsCount());
         }
+
+        [TestMethod]
+        public void ShutdownTest()
+        {
+            const int n = 5;
+            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
+
+            int Binpow()
+            {
+                int a = 25;
+                int p = 1000;
+
+                int res = 1;
+                while (p != 0)
+                {
+                    if (p % 2 == 1)
+                        res *= a;
+
+                    a *= a;
+
+                    p /= 2;
+                }
+
+                return res;
+
+            }
+
+            MyTask<int> heavyTask = threadPool.AddTask(Binpow);
+
+            Assert.AreEqual(n, threadPool.AliveThreadsCount());
+
+            threadPool.Shutdown();
+
+            Thread.Sleep(5);
+            //Assert.AreEqual(1, threadPool.AliveThreadsCount());
+            Assert.AreEqual(Binpow(), heavyTask.Result);
+
+        }
     }
 }
