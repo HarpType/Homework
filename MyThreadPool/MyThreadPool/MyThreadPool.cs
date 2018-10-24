@@ -48,29 +48,16 @@ namespace MyThreadPool
         {
             MyTask<TResult> newTask = new MyTask<TResult>(func, this.que);
 
-            Action action = ActionWrapper<TResult>(newTask);
+            Action action =
+                () =>
+                {
+                    TResult result = newTask.Result;
+                };
 
             que.Enqueue(action);
 
             return newTask;
         }
-
-
-        /// <summary>
-        /// Оборачививает значение MyTask в Action.
-        /// </summary>
-        /// <typeparam name="TResult">Тип возвращаемого задачей значения.</typeparam>
-        /// <param name="task">Задача.</param>
-        private Action ActionWrapper<TResult>(MyTask<TResult> task)
-        {
-            void action()
-            {
-                    TResult result = task.Result;
-            }
-
-            return action;
-        }
-
 
         /// <summary>
         /// Метод, который постоянное исполняется в потоках.

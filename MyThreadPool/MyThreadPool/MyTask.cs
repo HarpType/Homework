@@ -54,8 +54,12 @@ namespace MyThreadPool
             }
 
             MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, this.poolQue);
-            
-            Action action = ActionWrapper(nextTask);
+
+            Action action =
+                () =>
+                {
+                    TNewResult result = nextTask.Result;
+                };
 
             if (this.hasValue)
             {
@@ -126,21 +130,6 @@ namespace MyThreadPool
                 Action action = nextActions.Dequeue();
                 poolQue.Enqueue(action);
             }
-        }
-
-        /// <summary>
-        /// Оборачивает новую задачу в Action.
-        /// </summary>
-        /// <typeparam name="TNewResult">Тип нового вычисления.</typeparam>
-        /// <param name="task">Объект нового вычисления.</param>
-        public Action ActionWrapper<TNewResult>(MyTask<TNewResult> task)
-        {
-            void action()
-            {
-                TNewResult result = task.Result;
-            }
-
-            return action;
         }
     }
 }
