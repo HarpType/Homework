@@ -126,5 +126,39 @@ namespace MyThreadPoolTest
             Assert.AreEqual(Binpow(), heavyTask.Result);
 
         }
+
+        [TestMethod]
+        public void ExceptionTest()
+        {
+            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(1);
+
+            int ZeroDivide()
+            {
+                int x = 0;
+                return 5 / x;
+            }
+
+            MyTask<int> wrongTask = threadPool.AddTask(ZeroDivide);
+
+            Action wrongAction =
+                () => 
+                {
+                    int result = wrongTask.Result;
+                };
+
+            Assert.ThrowsException<AggregateException>(() => wrongTask.Result);
+
+            try
+            {
+                int result = wrongTask.Result;
+            }
+            catch (AggregateException ae)
+            {
+                foreach (Exception ex in ae.InnerExceptions)
+                {
+                    Assert.ThrowsException<DivideByZeroException>(() => throw ex);
+                }
+            }
+        }
     }
 }

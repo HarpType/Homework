@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace MyThreadPool
 {
+    /// <summary>
+    /// Класс реализует поведение пула потоков.
+    /// </summary>
     public class MyThreadPool
     {
         Object lockObject = new object();
@@ -62,7 +65,7 @@ namespace MyThreadPool
         {
             void action()
             {
-                TResult result = task.Result;
+                    TResult result = task.Result;
             }
 
             return action;
@@ -71,6 +74,9 @@ namespace MyThreadPool
 
         /// <summary>
         /// Метод, который постоянное исполняется в потоках.
+        /// В бесконечном цикле происходит проверка завершения пула потоков. 
+        /// После проверки каждый свободный поток пытается взять для себя 
+        /// новую задачу из очереди и, если таковая имеется, исполняет её.
         /// </summary>
         private void Run()
         {
@@ -98,12 +104,19 @@ namespace MyThreadPool
 
                     if (action != null)
                     {
-                        action();
+                        try
+                        {
+                            action();
+                        }
+                        catch { };
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Этот метод закрывает пул потоков.
+        /// </summary>
         public void Shutdown()
         {
             cts.Cancel();
@@ -112,9 +125,8 @@ namespace MyThreadPool
 
 
         /// <summary>
-        /// Считает все живые потоки.
+        /// Считает все активные потоки и возвращает их количество.
         /// </summary>
-        /// <returns>Возвращает количество живых потоков.</returns>
         public int AliveThreadsCount()
         {
             int count = 0;

@@ -5,6 +5,8 @@ namespace MyThreadPool
 {
     public class MyTask<TResult> : IMyTask<TResult>
     {
+        AggregateException aggException = null;
+
         private Object lockObject = new object();
 
         private volatile bool hasValue;
@@ -28,7 +30,13 @@ namespace MyThreadPool
 
             this.poolQue = poolQue;
         }
-        
+
+        public MyTask(Func<TResult> func)
+        {
+            this.func = func;
+            this.hasValue = false;
+        }
+
         /// <summary>
         /// Добавляет в очередь функций новую, которая опирается на результатах
         /// текущей функции
@@ -70,13 +78,28 @@ namespace MyThreadPool
         {
             get
             {
+                if (this.aggException != null)
+                {
+                    throw this.aggException;
+                }
+
                 if (!this.hasValue)
                 {
                     lock (this.lockObject)
                     {
                         if (!this.hasValue)
                         {
-                            this.result = this.func();
+                            try
+                            {
+                                this.result = this.func();
+                            }
+                            catch (Exception ex)
+                            {
+                                this.aggException = new AggregateException(ex);
+
+                                throw this.aggException;
+                            }
+
                             this.hasValue = true;
 
                             AddActionsToPool();
