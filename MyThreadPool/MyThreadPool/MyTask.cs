@@ -16,7 +16,7 @@ namespace MyThreadPool
         private Func<TResult> func;
 
         private SafeQueue<Action> poolQue;
-        private SafeQueue<Action> nextActions = new SafeQueue<Action>();
+        private Queue<Action> nextActions = new Queue<Action>();
 
         /// <summary>
         /// Конструктор класса задач.
@@ -39,10 +39,10 @@ namespace MyThreadPool
 
         /// <summary>
         /// Добавляет в очередь функций новую, которая опирается на результатах
-        /// текущей функции
+        /// текущей функции.
         /// </summary>
         /// <typeparam name="TNewResult">Тип новых вычислений.</typeparam>
-        /// <param name="func">Функция, описывающая новые вычисления</param>
+        /// <param name="func">Функция, описывающая новые вычисления.</param>
         /// <returns>Новая задача.</returns>
         public MyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
         {
@@ -55,11 +55,13 @@ namespace MyThreadPool
 
             MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, this.poolQue);
             
-            Action action = Wrapper(nextTask);
+            Action action = ActionWrapper(nextTask);
 
             if (this.hasValue)
             {
                 poolQue.Enqueue(action);
+                if (!this.hasValue)
+                    AddActionsToPool();
             }
             else
             {
@@ -71,8 +73,10 @@ namespace MyThreadPool
 
 
         /// <summary>
-        /// Свойство, возвращающее результат вычислений. Организует потокобезопасное ленивое вычислений
+        /// Свойство, возвращающее результат вычислений. Организует потокобезопасное ленивое вычисление
         /// заданной функции. После вычисления результатов добавляет все зависимые вычисления в пул потоков.
+        /// Если функция имеет исключение, то при первом вызове он будет помещён aggException. 
+        /// При последующих вызовах исключение возвращается без вычисления функции.
         /// </summary>
         public TResult Result
         {
@@ -101,10 +105,9 @@ namespace MyThreadPool
                             }
 
                             this.hasValue = true;
+                            this.func = null;
 
                             AddActionsToPool();
-
-                            this.func = null;
                         }
                     }
                 }
@@ -118,7 +121,7 @@ namespace MyThreadPool
         /// </summary>
         public void AddActionsToPool()
         {
-            while (this.nextActions.Size != 0)
+            while (this.nextActions.Count != 0)
             {
                 Action action = nextActions.Dequeue();
                 poolQue.Enqueue(action);
@@ -130,7 +133,7 @@ namespace MyThreadPool
         /// </summary>
         /// <typeparam name="TNewResult">Тип нового вычисления.</typeparam>
         /// <param name="task">Объект нового вычисления.</param>
-        public Action Wrapper<TNewResult>(MyTask<TNewResult> task)
+        public Action ActionWrapper<TNewResult>(MyTask<TNewResult> task)
         {
             void action()
             {

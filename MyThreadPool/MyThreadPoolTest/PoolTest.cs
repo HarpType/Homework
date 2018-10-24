@@ -17,9 +17,12 @@ namespace MyThreadPoolTest
             string SayHello() => "Hello";
 
             MyTask<string> helloTask = threadPool.AddTask<string>(SayHello);
-            //MyTask<string> helloTask = new MyTask<string>(SayHello);
 
-            Thread.Sleep(2000);
+            if (!helloTask.IsCompleted)
+            {
+                Thread.Sleep(500);
+            }
+
             Assert.AreEqual("Hello", helloTask.Result);
         }
 
@@ -34,7 +37,11 @@ namespace MyThreadPoolTest
             string SayWorld(string str) => str + " World!";
             MyTask<string> helloworldTask = helloTask.ContinueWith<string>(SayWorld);
 
-            Thread.Sleep(500);
+            if (!helloTask.IsCompleted)
+            {
+                Thread.Sleep(500);
+            }
+
             Assert.AreEqual("Hello", helloTask.Result);
             Assert.AreEqual("Hello World!", helloworldTask.Result);
         }
@@ -95,35 +102,27 @@ namespace MyThreadPoolTest
             const int n = 5;
             MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
 
-            int Binpow()
+            int Pow()
             {
-                int a = 25;
-                int p = 1000;
+                int a = 3638899;
+                int p = 1580589433;
 
                 int res = 1;
-                while (p != 0)
-                {
-                    if (p % 2 == 1)
-                        res *= a;
-
-                    a *= a;
-
-                    p /= 2;
-                }
+                for (int i = 0; i < p; i++)
+                    res *= a;
 
                 return res;
-
             }
 
-            MyTask<int> heavyTask = threadPool.AddTask(Binpow);
+            MyTask<int> heavyTask = threadPool.AddTask(Pow);
 
             Assert.AreEqual(n, threadPool.AliveThreadsCount());
 
             threadPool.Shutdown();
 
-            Thread.Sleep(5);
-            //Assert.AreEqual(1, threadPool.AliveThreadsCount());
-            Assert.AreEqual(Binpow(), heavyTask.Result);
+            Thread.Sleep(10);
+            Assert.AreEqual(1, threadPool.AliveThreadsCount());
+            Assert.AreEqual(Pow(), heavyTask.Result);
 
         }
 

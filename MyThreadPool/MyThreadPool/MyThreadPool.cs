@@ -23,11 +23,12 @@ namespace MyThreadPool
         public MyThreadPool(int n)
         {
             this.token = cts.Token;
+
             threads = new Thread[n];
 
             for (int i = 0; i < n; ++i)
             {
-                threads[i] = new Thread(Run);
+                threads[i] = new Thread(this.Run);
                 threads[i].IsBackground = true;
             }
 
@@ -41,13 +42,13 @@ namespace MyThreadPool
         /// Добавляет задачу в очередь.
         /// </summary>
         /// <typeparam name="TResult">Тип возвращаемого значения.</typeparam>
-        /// <param name="func">Функция.</param>
+        /// <param name="func">Функция, которую необходимо вычислить.</param>
         /// <returns></returns>
         public MyTask<TResult> AddTask<TResult>(Func<TResult> func)
         {
             MyTask<TResult> newTask = new MyTask<TResult>(func, this.que);
 
-            Action action = Wrapper<TResult>(newTask);
+            Action action = ActionWrapper<TResult>(newTask);
 
             que.Enqueue(action);
 
@@ -60,8 +61,7 @@ namespace MyThreadPool
         /// </summary>
         /// <typeparam name="TResult">Тип возвращаемого задачей значения.</typeparam>
         /// <param name="task">Задача.</param>
-        /// <returns></returns>
-        private Action Wrapper<TResult>(MyTask<TResult> task)
+        private Action ActionWrapper<TResult>(MyTask<TResult> task)
         {
             void action()
             {
