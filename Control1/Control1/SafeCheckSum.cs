@@ -1,12 +1,13 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Control1
 {
-    public class CheckSum
+    public class SafeCheckSum
     {
-        public CheckSum()
+        public SafeCheckSum()
         {
         }
 
@@ -22,22 +23,35 @@ namespace Control1
         private string GetDirCheckSum(string dirPath)
         {
             DirectoryInfo dir = new DirectoryInfo(dirPath);
-            string hashString = "";
 
-            List<string> hashList = new List<string>();
+            Task<string> dirTask = null;
+            List<Task<string>> taskList = new List<Task<string>>();
 
             foreach (var item in dir.GetDirectories())
             {
-                hashString += GetDirCheckSum(item.FullName);
+                dirTask = new Task<string>(path => GetDirCheckSum((string)path), item.FullName);
+                dirTask.Start();
             }
+
             foreach (var item in dir.GetFiles())
             {
-                hashList.Add(GetFileCheckSum(item.FullName));
+                Task<string> fileTask = new Task<string>(path => GetFileCheckSum((string)path), item.FullName);
+                taskList.Add(fileTask);
+                fileTask.Start();
             }
+
+            string hashString = "";
+            if (dirTask != null)
+                hashString += dirTask.Result;
+
+            List<string> hashList = new List<string>();
+
+            foreach (Task<string> task in taskList)
+                hashList.Add(task.Result);
 
             hashList.Sort();
 
-            foreach(string hash in hashList)
+            foreach (string hash in hashList)
                 hashString += hash;
 
             using (var md5 = MD5.Create())
@@ -47,6 +61,7 @@ namespace Control1
                 return System.Text.Encoding.Default.GetString(hashBytes);
             }
         }
+
 
         private string GetFileCheckSum(string filePath)
         {
