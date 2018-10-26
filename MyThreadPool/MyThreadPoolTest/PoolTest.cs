@@ -104,8 +104,8 @@ namespace MyThreadPoolTest
 
             int Pow()
             {
-                int a = 3638899;
-                int p = 1580589433;
+                int a = 1963889993;
+                int p = 1980589433;
 
                 int res = 1;
                 for (int i = 0; i < p; i++)
