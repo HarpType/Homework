@@ -2,8 +2,7 @@ version: 1.0.{build}
 
 image: Visual Studio 2017
 
--
-  branches:
+branches:
     only:
       - master
       
@@ -23,8 +22,7 @@ build_script:
   - msbuild MyThreadPool/MyThreadPool.sln
   - msbuild Control1/Control1.sln
   
--
-  branches:
+branches:
     only:
       - control1
 
