@@ -31,7 +31,8 @@ for:
       - control1
       
   environment:
-      - solution_name: Control1/Control1.sln    
+      matrix:
+        - solution_name: Control1/Control1.sln    
       
   before_build:
     - cmd: nuget restore Control1/Control1.sln
