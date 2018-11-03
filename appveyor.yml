@@ -2,12 +2,37 @@ version: 1.0.{build}
 
 image: Visual Studio 2017
 
+-
+  branches:
+    only:
+      - master
+      
 environment:
-    matrix:
+  matrix:
+    - solution_name: Lazy/Lazy.sln
     - solution_name: MyThreadPool/MyThreadPool.sln
+    - solution_name: Control1/Control1.sln
 
 before_build:
-  - cmd: nuget restore MyThreadPool/MyThreadPool.sln
-    
+  - cmd: nuget restore Lazy/Lazy.sln
+  - cmd: nuget restore MyThreadPool/MythreadPool.sln
+  - cmd: nuget restore Control1/Control1.sln
+
 build_script:
-    - msbuild MyThreadPool/MyThreadPool.sln
+  - msbuild Lazy/Lazy.sln
+  - msbuild MyThreadPool/MyThreadPool.sln
+  - msbuild Control1/Control1.sln
+  
+-
+  branches:
+    only:
+      - control1
+
+environment:
+  - solution_name: Control1/Control1.sln
+  
+before_build:
+  - cmd: nuget restore Control1/Control1.sln
+  
+build_script:
+  - msbuild Control1/Control1.sln
