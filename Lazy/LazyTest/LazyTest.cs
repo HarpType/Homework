@@ -21,17 +21,17 @@ namespace LazyTest
             int Binpow()
             {
                 int a = 3;
-                int n = 8;
+                int p = 8;
 
                 int res = 1;
-                while (n != 0)
+                while (p != 0)
                 {
-                    if (n % 2 == 1)
+                    if (p % 2 == 1)
                         res *= a;
 
                     a *= a;
 
-                    n /= 2;
+                    p /= 2;
                 }
 
                 return res;
@@ -46,12 +46,7 @@ namespace LazyTest
         [TestMethod, TestCategory("A")]
         public void RandomTest()
         {
-            int GetRandom()
-            {
-                int randomRes = this.random.Next(50, 100);
-
-                return randomRes;
-            }
+            int GetRandom() => this.random.Next(50, 100);
 
             SimpleLazy<int> randomLazy = LazyFactory.CreateSimpleLazy(GetRandom);
 
@@ -69,19 +64,15 @@ namespace LazyTest
         {
             Func<Object> NullSupplier() => null;
 
-            SimpleLazy<Object> simpleLazy = LazyFactory.CreateSimpleLazy<Object>(NullSupplier);
+            SimpleLazy<Object> simpleNullLazy = LazyFactory.CreateSimpleLazy<Object>(NullSupplier);
 
-            Assert.IsNull(simpleLazy.Get);
+            Assert.IsNull(simpleNullLazy.Get);
         }
 
         [TestMethod, TestCategory("A")]
         public void ThreadTest()
         {
-            string HelloFunc()
-            {
-                return "Hello";
-
-            }
+            string HelloFunc() => "Hello";
 
             const int n = 10;
             SafeLazy<string> helloLazy = LazyFactory.CreateSafeLazy(HelloFunc);
@@ -96,12 +87,12 @@ namespace LazyTest
                 threads[i] = new Thread(() => { resStrings[k] = helloLazy.Get; });
             }
 
-            foreach (Thread thread in threads)
+            foreach (var thread in threads)
             {
                 thread.Start();
             }
 
-            foreach (Thread thread in threads)
+            foreach (var thread in threads)
             {
                 thread.Join();
             }
@@ -113,12 +104,7 @@ namespace LazyTest
         [TestMethod, TestCategory("A")]
         public void SleepingThreadsTest()
         {
-            int GetRandom()
-            {
-                int res = random.Next(0, 100);
-
-                return res;
-            }
+            int GetRandom() => this.random.Next(0, 100);
 
             SafeLazy<int> safeLazy = LazyFactory.CreateSafeLazy(GetRandom);
 
@@ -133,7 +119,7 @@ namespace LazyTest
                 int k = i;
                 threads[i] = new Thread(() =>
                 {
-                    Thread.Sleep(random.Next(0, 100) * 10);
+                    Thread.Sleep(this.random.Next(0, 100) * 10);
 
                     for (int j = 0; j < n; ++j)
                     {
@@ -142,12 +128,12 @@ namespace LazyTest
                 });
             }
 
-            foreach (Thread thread in threads)
+            foreach (var thread in threads)
             {
                 thread.Start();
             }
 
-            foreach (Thread thread in threads)
+            foreach (var thread in threads)
             {
                 thread.Join();
             }
