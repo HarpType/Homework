@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Control1
 {
@@ -9,9 +10,12 @@ namespace Control1
             CheckSum checker = new CheckSum();
             SafeCheckSum safeChecker = new SafeCheckSum();
 
-            string result1 = checker.GetCheckSum(@"D:\TASM");
+            //string fullPath = Path.GetFullPath("");
+            string testDir = new DirectoryInfo(Environment.CurrentDirectory).Parent.Parent.Parent.FullName;
+            
+            string result1 = checker.GetCheckSum($@"{testDir}\TestDir");
 
-            string result2 = safeChecker.GetCheckSum(@"D:\TASM");
+            string result2 = safeChecker.GetCheckSum($@"{testDir}\TestDir");
 
             Console.WriteLine(result1);
             Console.WriteLine(result2);
