@@ -8,10 +8,10 @@ namespace MyThreadPool
     /// </summary>
     public class MyThreadPool
     {
-        Object lockObject = new object();
+        private object lockObject = new object();
 
-        CancellationTokenSource cts = new CancellationTokenSource();
-        CancellationToken token;
+        private CancellationTokenSource cts = new CancellationTokenSource();
+        private CancellationToken token;
 
         private SafeQueue<Action> taskQueue = new SafeQueue<Action>();
         private Thread[] threads;

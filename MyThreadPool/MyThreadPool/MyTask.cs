@@ -3,9 +3,13 @@ using System.Collections.Generic;
 
 namespace MyThreadPool
 {
+    /// <summary>
+    /// Класс предоставляет интерфейс для управления задачей.
+    /// </summary>
+    /// <typeparam name="TResult">Тип возвращаемого задачей значения.</typeparam>
     public class MyTask<TResult> : IMyTask<TResult>
     {
-        AggregateException aggException = null;
+        private AggregateException aggException = null;
 
         private object lockObject = new object();
 
@@ -15,19 +19,19 @@ namespace MyThreadPool
         private TResult result;
         private Func<TResult> func;
 
-        private SafeQueue<Action> poolQue;
+        private SafeQueue<Action> poolQueue;
         private SafeQueue<Action> nextActions = new SafeQueue<Action>();
 
         /// <summary>
         /// Конструктор класса задач.
         /// </summary>
         /// <param name="func">Функция для вычисления.</param>
-        /// <param name="poolQue">Ссылка на очередь пула.</param>
-        public MyTask(Func<TResult> func, SafeQueue<Action> poolQue)
+        /// <param name="poolQueue">Ссылка на очередь пула.</param>
+        public MyTask(Func<TResult> func, SafeQueue<Action> poolQueue)
         {
             this.func = func;
 
-            this.poolQue = poolQue;
+            this.poolQueue = poolQueue;
         }
 
         public MyTask(Func<TResult> func)
@@ -44,14 +48,9 @@ namespace MyThreadPool
         /// <returns>Новая задача.</returns>
         public MyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
         {
-            TNewResult supplier()
-            {
-                TNewResult result = func(Result);
+            TNewResult supplier() => func(Result);
 
-                return result;
-            }
-
-            MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, poolQue);
+            var nextTask = new MyTask<TNewResult>(supplier, poolQueue);
 
             Action action =
                 () =>
@@ -61,13 +60,15 @@ namespace MyThreadPool
 
             if (hasValue)
             {
-                poolQue.Enqueue(action);
-                if (!hasValue)
-                    AddActionsToPool();
+                poolQueue.Enqueue(action);
             }
             else
             {
                 nextActions.Enqueue(action);
+                if (hasValue)
+                {
+                    AddActionsToPool();
+                }
             }
 
             return nextTask;
@@ -126,7 +127,7 @@ namespace MyThreadPool
             while (nextActions.Size != 0)
             {
                 Action action = nextActions.Dequeue();
-                poolQue.Enqueue(action);
+                poolQueue.Enqueue(action);
             }
         }
     }
