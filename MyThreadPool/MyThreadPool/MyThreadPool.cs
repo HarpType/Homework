@@ -47,14 +47,6 @@ namespace MyThreadPool
         {
             IMyTask<TResult> newTask = new MyTask<TResult>(func, taskQueue);
 
-            Action action =
-                () =>
-                {
-                    TResult result = newTask.Result;
-                };
-
-            taskQueue.Enqueue(action);
-
             return newTask;
         }
 
@@ -151,16 +143,36 @@ namespace MyThreadPool
             /// </summary>
             /// <param name="func">Функция для вычисления.</param>
             /// <param name="poolQueue">Ссылка на очередь пула.</param>
-            public MyTask(Func<TResult> func, SafeQueue<Action> poolQueue)
-            {
-                this.func = func;
-
-                this.poolQueue = poolQueue;
-            }
-
             public MyTask(Func<TResult> func)
             {
                 this.func = func;
+                // TODO: реализовать второй конструктор для continuewith
+
+                Action action = ActionWrapper(this.func);
+
+                poolQueue.Enqueue(action);
+            }
+
+            private Action ActionWrapper(Func<TResult> func)
+            {
+                return () =>
+                {
+                    try
+                    {
+                        result = func();
+                    }
+                    catch (Exception ex)
+                    {
+                        aggException = new AggregateException(ex);
+
+                        throw aggException;
+                    }
+
+                    hasValue = true;
+                    func = null;
+
+                    AddActionsToPool();
+                };
             }
 
             /// <summary>
@@ -174,21 +186,23 @@ namespace MyThreadPool
             {
                 TNewResult supplier() => func(Result);
 
-                var nextTask = new MyTask<TNewResult>(supplier, poolQueue);
+                MyTask<TNewResult> nextTask;
 
-                Action action =
-                    () =>
-                    {
-                        TNewResult result = nextTask.Result;
-                    };
+                //Action action =
+                //    () =>
+                //    {
+                //        TNewResult result = nextTask.Result;
+                //    };
 
                 if (hasValue)
                 {
-                    poolQueue.Enqueue(action);
+                    // poolQueue.Enqueue(action);
+                    nextTask = new MyTask<TNewResult>(supplier, poolQueue);
                 }
                 else
                 {
-                    nextActions.Enqueue(action);
+                    // nextActions.Enqueue(action);
+                    nextTask = new MyTask<TNewResult>(supplier, nextActions);
                     if (hasValue)
                     {
                         AddActionsToPool();
@@ -214,30 +228,33 @@ namespace MyThreadPool
                         throw aggException;
                     }
 
-                    if (!hasValue)
-                    {
-                        lock (lockObject)
-                        {
-                            if (!hasValue)
-                            {
-                                try
-                                {
-                                    result = func();
-                                }
-                                catch (Exception ex)
-                                {
-                                    aggException = new AggregateException(ex);
+                    //if (!hasValue)
+                    //{
+                    //    lock (lockObject)
+                    //    {
+                    //        if (!hasValue)
+                    //        {
+                    //            try
+                    //            {
+                    //                result = func();
+                    //            }
+                    //            catch (Exception ex)
+                    //            {
+                    //                aggException = new AggregateException(ex);
 
-                                    throw aggException;
-                                }
+                    //                throw aggException;
+                    //            }
 
-                                hasValue = true;
-                                func = null;
+                    //            hasValue = true;
+                    //            func = null;
 
-                                AddActionsToPool();
-                            }
-                        }
-                    }
+                    //            AddActionsToPool();
+                    //        }
+                    //    }
+                    //}
+
+                    while (!hasValue)
+                        continue;
 
                     return result;
                 }
