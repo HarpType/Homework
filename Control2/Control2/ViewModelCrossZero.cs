@@ -9,9 +9,8 @@ namespace Control2
 {
     class ViewModelCrossZero
     {
+        // Поле отображения игры
         public string[, ] Field { get; private set; }
-
-        public string Name = "TestName";
 
         private CrossZero crossZero;
 
@@ -28,6 +27,11 @@ namespace Control2
                     Field[i, j] = "0";
         }
 
+        /// <summary>
+        /// Метод посылает запрос crossZero на изменение поля
+        /// </summary>
+        /// <param name="row">номер строки, на которую нажали</param>
+        /// <param name="column">номер столбца, на которую нажали</param>
         public void GetData(int row, int column)
         {
             Field = crossZero.GetInfo(row, column);

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Control2"
         mc:Ignorable="d"
         Title="MainWindow" Height="448.55" Width="798.551">
-    <Grid Margin="0,0,486,102" RenderTransformOrigin="0.476,0.529">
+    <Grid Margin="0,0,490,132.333" RenderTransformOrigin="0.476,0.529">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="100"/>
@@ -25,6 +25,6 @@
         <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Click="Button_Click" Content="{Binding Path=Field[1][2]}"/>
         <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Click="Button_Click" Content="{Binding Path=Field[2][0]}"/>
         <Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Click="Button_Click" Content="{Binding Path=Field[2][1]}"/>
-        <Button Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Click="Button_Click" Content="{Binding Path=Field[2][2]}"/>
+        <Button Grid.Row="2" Grid.Column="2" Click="Button_Click" Content="{Binding Path=Field[2][2]}" Margin="0.333,0.333,10,10"/>
     </Grid>
 </Window>
