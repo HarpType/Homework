@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 
 namespace Control2
 {
+
+    /// <summary>
+    /// Класс, отвечающий за логику игры.
+    /// </summary>
     class CrossZero
     {
+        // поле следит за тем, чья очередь ходить
         private bool crossTurn = true;
 
+        // поле игры
         private string[,] field = new string[3, 3];
+        // защищает клетку от повторного нажатия
         private bool[,] defender = new bool[3, 3];
 
         private int counter;
@@ -27,6 +34,12 @@ namespace Control2
             counter = 0;
         }
 
+        /// <summary>
+        /// Обновляет поле
+        /// </summary>
+        /// <param name="row">номер строки, на которую нажали</param>
+        /// <param name="column">номер столбца, на которую нажали</param>
+        /// <returns></returns>
         public string[, ] GetInfo(int row, int column)
         {
             if (defender[row, column])
