@@ -39,7 +39,7 @@ namespace MyThreadPool
         }
 
         /// <summary>
-        /// Добавляет задачу в очередь.
+        /// Добавляет задачу в очередь. Возвращает обработчик задачи.
         /// </summary>
         /// <typeparam name="TResult">Тип возвращаемого функцией значения.</typeparam>
         /// <param name="func">Функция, которую необходимо вычислить.</param>
@@ -135,22 +135,22 @@ namespace MyThreadPool
             private TResult result;
             private Func<TResult> func;
 
-            private SafeQueue<Action> poolQueue;
+            private SafeQueue<Action> ownersTaskQueue;
             private SafeQueue<Action> nextActions = new SafeQueue<Action>();
 
             /// <summary>
-            /// Конструктор класса задач.
+            /// Конструктор класса задач. Помещает задачу в заданный пул poolQueue.
             /// </summary>
-            /// <param name="func">Функция для вычисления.</param>
-            /// <param name="poolQueue">Ссылка на очередь пула.</param>
-            public MyTask(Func<TResult> func)
+            /// <param name="supplier"></param>
+            /// <param name="nextActions"></param>
+            public MyTask(Func<TResult> func, SafeQueue<Action> ownersTaskQueue)
             {
                 this.func = func;
-                // TODO: реализовать второй конструктор для continuewith
 
                 Action action = ActionWrapper(this.func);
 
-                poolQueue.Enqueue(action);
+                this.ownersTaskQueue = ownersTaskQueue;
+                this.ownersTaskQueue.Enqueue(action);
             }
 
             private Action ActionWrapper(Func<TResult> func)
@@ -184,8 +184,6 @@ namespace MyThreadPool
             /// <returns>Новая задача.</returns>
             public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
             {
-                TNewResult supplier() => func(Result);
-
                 MyTask<TNewResult> nextTask;
 
                 //Action action =
@@ -194,14 +192,14 @@ namespace MyThreadPool
                 //        TNewResult result = nextTask.Result;
                 //    };
 
+                TNewResult supplier() => func(result);
+
                 if (hasValue)
                 {
-                    // poolQueue.Enqueue(action);
-                    nextTask = new MyTask<TNewResult>(supplier, poolQueue);
+                    nextTask = new MyTask<TNewResult>(supplier, this.ownersTaskQueue);
                 }
                 else
                 {
-                    // nextActions.Enqueue(action);
                     nextTask = new MyTask<TNewResult>(supplier, nextActions);
                     if (hasValue)
                     {
@@ -223,9 +221,12 @@ namespace MyThreadPool
             {
                 get
                 {
-                    if (aggException != null)
+                    while (!hasValue)
                     {
-                        throw aggException;
+                        if (aggException != null)
+                        {
+                            throw aggException;
+                        }
                     }
 
                     //if (!hasValue)
@@ -253,9 +254,6 @@ namespace MyThreadPool
                     //    }
                     //}
 
-                    while (!hasValue)
-                        continue;
-
                     return result;
                 }
             }
@@ -268,7 +266,7 @@ namespace MyThreadPool
                 while (nextActions.Size != 0)
                 {
                     Action action = nextActions.Dequeue();
-                    poolQueue.Enqueue(action);
+                    ownersTaskQueue.Enqueue(action);
                 }
             }
         }
