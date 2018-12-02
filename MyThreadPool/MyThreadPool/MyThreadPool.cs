@@ -13,8 +13,17 @@ namespace MyThreadPool
         private CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken token;
 
+        private int threadCount;
+
         private SafeQueue<Action> taskQueue = new SafeQueue<Action>();
         private Thread[] threads;
+        private ManualResetEvent[] events;
+
+        private Thread manageThread;
+        private AutoResetEvent manageEvent = new AutoResetEvent(false);
+
+        private Thread stopThread;
+        private AutoResetEvent stopEvent = new AutoResetEvent(false);
 
         /// <summary>
         /// Инициализирует и запускает фиксированное количество потоков.
@@ -22,20 +31,32 @@ namespace MyThreadPool
         /// <param name="n">Количество запускаемых потоков.</param>
         public MyThreadPool(int n)
         {
+            threadCount = n;
+
             token = cts.Token;
 
-            threads = new Thread[n];
+            threads = new Thread[threadCount];
+            events = new ManualResetEvent[threadCount];
 
-            for (int i = 0; i < n; ++i)
+            for (int i = 0; i < threadCount; ++i)
             {
-                threads[i] = new Thread(Run);
+                int j = i;
+                threads[i] = new Thread(() => { int k = j; Run(k); });
                 threads[i].IsBackground = true;
+
+                events[i] = new ManualResetEvent(false);
             }
 
             foreach (Thread thread in threads)
             {
                 thread.Start();
             }
+
+            manageThread = new Thread(ManageRun) { IsBackground = true };
+            manageThread.Start();
+
+            stopThread = new Thread(StopRun) { IsBackground = true };
+            stopThread.Start();
         }
 
         /// <summary>
@@ -47,8 +68,11 @@ namespace MyThreadPool
         {
             IMyTask<TResult> newTask = new MyTask<TResult>(func, taskQueue);
 
+            manageEvent.Set();
+
             return newTask;
         }
+
 
         /// <summary>
         /// Метод, который постоянно исполняется в каждом из потоков.
@@ -56,14 +80,16 @@ namespace MyThreadPool
         /// После проверки каждый свободный поток пытается взять для себя 
         /// новую задачу из очереди и, если таковая имеется, исполняет её.
         /// </summary>
-        private void Run()
+        private void Run(int threadId)
         {
             while (true)
             {
+                events[threadId].WaitOne();
+
                 if (token.IsCancellationRequested)
                 {
                     return;
-                }
+                } 
 
                 if (taskQueue.Size != 0)
                 {
@@ -89,6 +115,72 @@ namespace MyThreadPool
                         catch { };
                     }
                 }
+
+                events[threadId].Reset();
+            }
+        }
+
+        private void ManageRun()
+        {
+            while (true)
+            {
+                manageEvent.WaitOne();
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                lock (threads)
+                {
+                    while (taskQueue.Size != 0)
+                    {
+                        for (int i = 0; i < threadCount; i++)
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            if (events[i].WaitOne(0) == false)
+                            {
+                                events[i].Set();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void StopRun()
+        {
+            while (true)
+            {
+                stopEvent.WaitOne();
+
+                lock (threads)
+                {
+                    while (true)
+                    {
+                        bool allAreClosed = true;
+
+                        for (int i = 0; i < threadCount; i++)
+                        {
+                            if (events[i].WaitOne(0) == false)
+                            {
+                                events[i].Set();
+                            }
+                            else
+                            {
+                                allAreClosed = false;
+                            }
+                        }
+
+                        if (allAreClosed)
+                            return;
+                    }
+                }
             }
         }
 
@@ -99,6 +191,8 @@ namespace MyThreadPool
         {
             cts.Cancel();
             cts.Dispose();
+
+            stopEvent.Set();
         }
 
 
@@ -228,31 +322,6 @@ namespace MyThreadPool
                             throw aggException;
                         }
                     }
-
-                    //if (!hasValue)
-                    //{
-                    //    lock (lockObject)
-                    //    {
-                    //        if (!hasValue)
-                    //        {
-                    //            try
-                    //            {
-                    //                result = func();
-                    //            }
-                    //            catch (Exception ex)
-                    //            {
-                    //                aggException = new AggregateException(ex);
-
-                    //                throw aggException;
-                    //            }
-
-                    //            hasValue = true;
-                    //            func = null;
-
-                    //            AddActionsToPool();
-                    //        }
-                    //    }
-                    //}
 
                     return result;
                 }
