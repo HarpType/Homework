@@ -65,10 +65,9 @@ namespace MyThreadPool
 
 
         /// <summary>
-        /// Метод, который постоянно исполняется в каждом из потоков.
-        /// В бесконечном цикле происходит проверка завершения пула потоков. 
-        /// После проверки каждый свободный поток пытается взять для себя 
-        /// новую задачу из очереди и, если таковая имеется, исполняет её.
+        /// Метод, который исполняется в каждом из потоков.
+        /// Позволяет каждому из потоков обработать функцию task'а.
+        /// Завершается при запросе cancellation token.
         /// </summary>
         private void Run()
         {
@@ -135,7 +134,7 @@ namespace MyThreadPool
         }
 
         /// <summary>
-        /// Класс предоставляет интерфейс для управления задачей.
+        /// Класс предоставляет интерфейс для управления задачами.
         /// </summary>
         /// <typeparam name="TResult">Тип возвращаемого задачей значения.</typeparam>
         private class MyTask<TResult> : IMyTask<TResult>
@@ -145,6 +144,10 @@ namespace MyThreadPool
             private object lockObject = new object();
 
             private volatile bool hasValue = false;
+
+            /// <summary>
+            /// Свойство возвращает true, если значение вычислено, false иначе.
+            /// </summary>
             public bool IsCompleted { get { return hasValue; } }
 
             private TResult result;
@@ -182,7 +185,6 @@ namespace MyThreadPool
                 catch (Exception ex)
                 {
                     aggException = new AggregateException(ex);
-
                 }
 
                 if (aggException == null)
@@ -239,10 +241,8 @@ namespace MyThreadPool
 
 
             /// <summary>
-            /// Свойство, возвращающее результат вычислений. Организует потокобезопасное ленивое вычисление
-            /// заданной функции. После вычисления результатов добавляет все зависимые вычисления в пул потоков.
-            /// Если функция имеет исключение, то при первом вызове исключение будет помещено в aggException. 
-            /// При последующих вызовах исключение возвращается без вычисления функции.
+            /// Свойство, возвращающее результат вычислений. 
+            /// Ждёт событие valueEvent, которое взводится после
             /// </summary>
             public TResult Result
             {
