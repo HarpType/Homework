@@ -17,13 +17,7 @@ namespace MyThreadPool
 
         private SafeQueue<Action> taskQueue = new SafeQueue<Action>();
         private Thread[] threads;
-        private ManualResetEvent[] events;
-
-        private Thread manageThread;
-        private AutoResetEvent manageEvent = new AutoResetEvent(false);
-
-        private Thread stopThread;
-        private AutoResetEvent stopEvent = new AutoResetEvent(false);
+        private ManualResetEvent threadEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Инициализирует и запускает фиксированное количество потоков.
@@ -36,27 +30,19 @@ namespace MyThreadPool
             token = cts.Token;
 
             threads = new Thread[threadCount];
-            events = new ManualResetEvent[threadCount];
 
             for (int i = 0; i < threadCount; ++i)
             {
                 int j = i;
-                threads[i] = new Thread(() => { int k = j; Run(k); });
+                threads[i] = new Thread(Run);
                 threads[i].IsBackground = true;
 
-                events[i] = new ManualResetEvent(false);
             }
 
             foreach (Thread thread in threads)
             {
                 thread.Start();
             }
-
-            manageThread = new Thread(ManageRun) { IsBackground = true };
-            manageThread.Start();
-
-            stopThread = new Thread(StopRun) { IsBackground = true };
-            stopThread.Start();
         }
 
         /// <summary>
@@ -66,9 +52,13 @@ namespace MyThreadPool
         /// <param name="func">Функция, которую необходимо вычислить.</param>
         public IMyTask<TResult> AddTask<TResult>(Func<TResult> func)
         {
-            IMyTask<TResult> newTask = new MyTask<TResult>(func, taskQueue);
+            MyTask<TResult> newTask = new MyTask<TResult>(func, this);
 
-            manageEvent.Set();
+            Action action = () => newTask.Compute();
+
+            taskQueue.Enqueue(action);
+
+            threadEvent.Set();
 
             return newTask;
         }
@@ -80,106 +70,37 @@ namespace MyThreadPool
         /// После проверки каждый свободный поток пытается взять для себя 
         /// новую задачу из очереди и, если таковая имеется, исполняет её.
         /// </summary>
-        private void Run(int threadId)
+        private void Run()
         {
             while (true)
             {
-                events[threadId].WaitOne();
-
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                } 
-
-                if (taskQueue.Size != 0)
-                {
-                    Action action;
-                    lock (lockObject)
-                    {
-                        if (taskQueue.Size != 0)
-                        {
-                            action = taskQueue.Dequeue();
-                        }
-                        else
-                        {
-                            action = null;
-                        }
-                    }
-
-                    if (action != null)
-                    {
-                        try
-                        {
-                            action();
-                        }
-                        catch { };
-                    }
-                }
-
-                events[threadId].Reset();
-            }
-        }
-
-        private void ManageRun()
-        {
-            while (true)
-            {
-                manageEvent.WaitOne();
+                threadEvent.WaitOne();
 
                 if (token.IsCancellationRequested)
                 {
                     return;
                 }
-
-                lock (threads)
+                else if (taskQueue.Size == 1)
                 {
-                    while (taskQueue.Size != 0)
-                    {
-                        for (int i = 0; i < threadCount; i++)
-                        {
-                            if (token.IsCancellationRequested)
-                            {
-                                return;
-                            }
+                    threadEvent.Reset();
+                }
 
-                            if (events[i].WaitOne(0) == false)
-                            {
-                                events[i].Set();
-                                break;
-                            }
-                        }
+                Action action = null;
+                lock (lockObject)
+                {
+                    if (taskQueue.Size != 0)
+                    {
+                        action = taskQueue.Dequeue();
                     }
                 }
-            }
-        }
 
-        private void StopRun()
-        {
-            while (true)
-            {
-                stopEvent.WaitOne();
-
-                lock (threads)
+                if (action != null)
                 {
-                    while (true)
+                    try
                     {
-                        bool allAreClosed = true;
-
-                        for (int i = 0; i < threadCount; i++)
-                        {
-                            if (events[i].WaitOne(0) == false)
-                            {
-                                events[i].Set();
-                            }
-                            else
-                            {
-                                allAreClosed = false;
-                            }
-                        }
-
-                        if (allAreClosed)
-                            return;
+                        action();
                     }
+                    catch { };
                 }
             }
         }
@@ -192,7 +113,7 @@ namespace MyThreadPool
             cts.Cancel();
             cts.Dispose();
 
-            stopEvent.Set();
+            threadEvent.Set();
         }
 
 
@@ -219,7 +140,7 @@ namespace MyThreadPool
         /// <typeparam name="TResult">Тип возвращаемого задачей значения.</typeparam>
         private class MyTask<TResult> : IMyTask<TResult>
         {
-            private AggregateException aggException = null;
+            private volatile AggregateException aggException = null;
 
             private object lockObject = new object();
 
@@ -229,44 +150,51 @@ namespace MyThreadPool
             private TResult result;
             private Func<TResult> func;
 
-            private SafeQueue<Action> ownersTaskQueue;
+            private MyThreadPool threadPool;
             private SafeQueue<Action> nextActions = new SafeQueue<Action>();
+
+            private ManualResetEvent valueEvent = new ManualResetEvent(false);
 
             /// <summary>
             /// Конструктор класса задач. Помещает задачу в заданный пул poolQueue.
             /// </summary>
             /// <param name="supplier"></param>
             /// <param name="nextActions"></param>
-            public MyTask(Func<TResult> func, SafeQueue<Action> ownersTaskQueue)
+            public MyTask(Func<TResult> func, MyThreadPool threadPool)
             {
                 this.func = func;
 
-                Action action = ActionWrapper(this.func);
-
-                this.ownersTaskQueue = ownersTaskQueue;
-                this.ownersTaskQueue.Enqueue(action);
+                this.threadPool = threadPool;
             }
 
-            private Action ActionWrapper(Func<TResult> func)
+
+            /// <summary>
+            /// Метод, отвечающий за вычисление функции. 
+            /// Исполняет функцию и обрабатывает её возможные исключения. 
+            /// Этот метод запускается в одном из потоков MyThreadPool.
+            /// </summary>
+            public void Compute()
             {
-                return () =>
+                try
                 {
-                    try
-                    {
-                        result = func();
-                    }
-                    catch (Exception ex)
-                    {
-                        aggException = new AggregateException(ex);
+                    result = func();
+                }
+                catch (Exception ex)
+                {
+                    aggException = new AggregateException(ex);
 
-                        throw aggException;
-                    }
+                }
 
+                if (aggException == null)
+                {
                     hasValue = true;
-                    func = null;
+                }
 
-                    AddActionsToPool();
-                };
+                AddActionsToPool();
+
+                func = null;
+
+                valueEvent.Set();
             }
 
             /// <summary>
@@ -278,23 +206,28 @@ namespace MyThreadPool
             /// <returns>Новая задача.</returns>
             public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
             {
-                MyTask<TNewResult> nextTask;
 
-                //Action action =
-                //    () =>
-                //    {
-                //        TNewResult result = nextTask.Result;
-                //    };
+                TNewResult supplier()
+                {
+                    TNewResult result = func(Result);
 
-                TNewResult supplier() => func(result);
+                    return result;
+                }
+
+                MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, threadPool);
+
+                Action action = () => nextTask.Compute();
 
                 if (hasValue)
                 {
-                    nextTask = new MyTask<TNewResult>(supplier, this.ownersTaskQueue);
+                    threadPool.taskQueue.Enqueue(action);
+
+                    threadPool.threadEvent.Set();
                 }
                 else
                 {
-                    nextTask = new MyTask<TNewResult>(supplier, nextActions);
+                    nextActions.Enqueue(action);
+
                     if (hasValue)
                     {
                         AddActionsToPool();
@@ -315,12 +248,11 @@ namespace MyThreadPool
             {
                 get
                 {
-                    while (!hasValue)
+                    valueEvent.WaitOne();
+
+                    if (aggException != null)
                     {
-                        if (aggException != null)
-                        {
-                            throw aggException;
-                        }
+                        throw aggException;
                     }
 
                     return result;
@@ -335,8 +267,10 @@ namespace MyThreadPool
                 while (nextActions.Size != 0)
                 {
                     Action action = nextActions.Dequeue();
-                    ownersTaskQueue.Enqueue(action);
+                    threadPool.taskQueue.Enqueue(action);
                 }
+
+                threadPool.threadEvent.Set();
             }
         }
 

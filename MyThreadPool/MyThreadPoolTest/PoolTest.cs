@@ -141,12 +141,6 @@ namespace MyThreadPoolTest
 
             var wrongTask = threadPool.AddTask(ZeroDivide);
 
-            Action wrongAction =
-                () => 
-                {
-                    int result = wrongTask.Result;
-                };
-
             Assert.ThrowsException<AggregateException>(() => wrongTask.Result);
 
             try
@@ -160,6 +154,39 @@ namespace MyThreadPoolTest
                     Assert.ThrowsException<DivideByZeroException>(() => throw ex);
                 }
             }
+        }
+
+        [TestMethod]
+        public void ContinueWithExceptionTest()
+        {
+            var threadPool = new MyThreadPool.MyThreadPool(1);
+
+            int ZeroDivide()
+            {
+                int x = 0;
+                return 5 / x;
+            }
+
+            string IntToString(int k) => k.ToString();
+
+            var wrongTask = threadPool.AddTask(ZeroDivide);
+
+            var intToStringTask = wrongTask.ContinueWith(IntToString);            
+
+            Assert.ThrowsException<AggregateException>(() => intToStringTask.Result);
+
+            try
+            {
+                string result = intToStringTask.Result;
+            }
+            catch (AggregateException ae)
+            {
+                foreach (Exception ex in ae.InnerExceptions)
+                {
+                    Assert.ThrowsException<DivideByZeroException>(() => throw ex);
+                }
+            }
+
         }
     }
 }
