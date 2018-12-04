@@ -2,8 +2,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 
-using MyThreadPool;
-
 namespace MyThreadPoolTest
 {
     [TestClass]

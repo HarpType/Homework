@@ -8,12 +8,12 @@ namespace MyThreadPool
     /// </summary>
     public class MyThreadPool
     {
-        private object lockObject = new object();
+        private readonly object lockObject = new object();
 
         private CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken token;
 
-        private int threadCount;
+        private readonly int threadCount;
 
         private SafeQueue<Action> taskQueue = new SafeQueue<Action>();
         private Thread[] threads;
@@ -34,8 +34,7 @@ namespace MyThreadPool
             for (int i = 0; i < threadCount; ++i)
             {
                 int j = i;
-                threads[i] = new Thread(Run);
-                threads[i].IsBackground = true;
+                threads[i] = new Thread(Run) { IsBackground = true };
 
             }
 
@@ -52,7 +51,7 @@ namespace MyThreadPool
         /// <param name="func">Функция, которую необходимо вычислить.</param>
         public IMyTask<TResult> AddTask<TResult>(Func<TResult> func)
         {
-            MyTask<TResult> newTask = new MyTask<TResult>(func, this);
+            var newTask = new MyTask<TResult>(func, this);
 
             Action action = () => newTask.Compute();
 
@@ -65,8 +64,8 @@ namespace MyThreadPool
 
 
         /// <summary>
-        /// Метод, который исполняется в каждом из потоков.
-        /// Позволяет каждому из потоков обработать функцию task'а.
+        /// Метод, который исполняется в каждом потоке.
+        /// Позволяет каждому потоку обработать функцию task'а.
         /// Завершается при запросе cancellation token.
         /// </summary>
         private void Run()
@@ -141,7 +140,7 @@ namespace MyThreadPool
         {
             private volatile AggregateException aggException = null;
 
-            private object lockObject = new object();
+            private readonly object lockObject = new object();
 
             private volatile bool hasValue = false;
 
@@ -159,10 +158,10 @@ namespace MyThreadPool
             private ManualResetEvent valueEvent = new ManualResetEvent(false);
 
             /// <summary>
-            /// Конструктор класса задач. Помещает задачу в заданный пул poolQueue.
+            /// Конструктор класса задач.
             /// </summary>
-            /// <param name="supplier"></param>
-            /// <param name="nextActions"></param>
+            /// <param name="func">Функция, которую необходимо вычислить в отдельном потоке.</param>
+            /// <param name="threadPool">Экземпляр класса MyThreadPool.</param>
             public MyTask(Func<TResult> func, MyThreadPool threadPool)
             {
                 this.func = func;
@@ -173,7 +172,9 @@ namespace MyThreadPool
 
             /// <summary>
             /// Метод, отвечающий за вычисление функции. 
-            /// Исполняет функцию и обрабатывает её возможные исключения. 
+            /// Исполняет функцию и обрабатывает её возможные исключения.
+            /// После этого добавляет все зависимые задачи в основной пул задач MyThreadPool.
+            /// Взводит сигнал valueEvent.
             /// Этот метод запускается в одном из потоков MyThreadPool.
             /// </summary>
             public void Compute()
@@ -216,7 +217,7 @@ namespace MyThreadPool
                     return result;
                 }
 
-                MyTask<TNewResult> nextTask = new MyTask<TNewResult>(supplier, threadPool);
+                var nextTask = new MyTask<TNewResult>(supplier, threadPool);
 
                 Action action = () => nextTask.Compute();
 
@@ -242,7 +243,8 @@ namespace MyThreadPool
 
             /// <summary>
             /// Свойство, возвращающее результат вычислений. 
-            /// Ждёт событие valueEvent, которое взводится после
+            /// Ожидает сигнала valueEvent. В случае, если функция объекта завершается с исключением,
+            /// метод также завершается с исключением AggregateError. 
             /// </summary>
             public TResult Result
             {
@@ -260,7 +262,7 @@ namespace MyThreadPool
             }
 
             /// <summary>
-            /// Добавляет все вычисления, зависящие от текущего, в пул потоков.
+            /// Добавляет все вычисления, зависящие от текущего, в очередь задач MyThreadPool.
             /// </summary>
             public void AddActionsToPool()
             {

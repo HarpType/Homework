@@ -10,7 +10,7 @@ namespace MyThreadPool
     {
         private Queue<T> queue = new Queue<T>();
 
-        private object lockObject = new object();
+        private readonly object lockObject = new object();
 
         /// <summary>
         /// Безопасное занесение элемента в очередь.
