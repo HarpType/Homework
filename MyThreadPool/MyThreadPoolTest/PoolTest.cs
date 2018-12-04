@@ -185,10 +185,7 @@ namespace MyThreadPoolTest
                 }
                 catch (AggregateException ae1)
                 {
-                    foreach (Exception ex in ae1.InnerExceptions)
-                    {
-                        Assert.ThrowsException<DivideByZeroException>(() => throw ex);
-                    }
+                    Assert.ThrowsException<DivideByZeroException>(() => throw ae1.InnerException);
                 }
             }
 
