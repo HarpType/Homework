@@ -172,17 +172,6 @@ namespace MyThreadPoolTest
             var intToStringTask = wrongTask.ContinueWith(IntToString);            
 
             Assert.ThrowsException<AggregateException>(() => intToStringTask.Result);
-
-            try
-            {
-                string result = intToStringTask.Result;
-            }
-            catch (AggregateException ae)
-            {
-
-                Assert.ThrowsException<AggregateException>(() => throw ae.InnerException);
-            }
-
         }
     }
 }
