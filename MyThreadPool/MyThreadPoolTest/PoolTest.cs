@@ -153,25 +153,5 @@ namespace MyThreadPoolTest
                 }
             }
         }
-
-        [TestMethod]
-        public void ContinueWithExceptionTest()
-        {
-            var threadPool = new MyThreadPool.MyThreadPool(1);
-
-            int ZeroDivide()
-            {
-                int x = 0;
-                return 5 / x;
-            }
-
-            string IntToString(int k) => k.ToString();
-
-            var wrongTask = threadPool.AddTask(ZeroDivide);
-
-            var intToStringTask = wrongTask.ContinueWith(IntToString);            
-
-            Assert.ThrowsException<AggregateException>(() => intToStringTask.Result);
-        }
     }
 }
