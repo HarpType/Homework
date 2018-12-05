@@ -75,7 +75,7 @@ namespace SimpleFTPServer
         /// </summary>
         /// <param name="path">Путь к директории.</param>
         /// <returns>Ответ в указанном формате.</returns>
-        private string DoListCommand(String dirPath)
+        private string DoListCommand(string dirPath)
         {
             var dir = new DirectoryInfo(dirPath);
 
