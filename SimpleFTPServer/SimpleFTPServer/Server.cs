@@ -77,7 +77,14 @@ namespace SimpleFTPServer
         /// <returns>Ответ в указанном формате.</returns>
         private string DoListCommand(string dirPath)
         {
+            string dataString;
+
             var dir = new DirectoryInfo(dirPath);
+
+            if (!dir.Exists)
+            {
+                return "-1";
+            }
 
             int dirFilesCount = 0;
 
@@ -95,7 +102,7 @@ namespace SimpleFTPServer
                 fileString += item.Name + " false ";
             }
 
-            string dataString = dirFilesCount.ToString() + " " + dirString + fileString;
+            dataString = dirFilesCount.ToString() + " " + dirString + fileString;
 
             return dataString;
         }
@@ -107,23 +114,34 @@ namespace SimpleFTPServer
         /// <returns>Ответ в указанном формате.</returns>
         private string DoGetCommand(string filePath)
         {
+            string dataString;
+
             long fileSize = 0;
             string content = "";
 
-            using (StreamReader fs = new StreamReader(filePath))
+            try
             {
-                while (true)
+                using (StreamReader fs = new StreamReader(filePath))
                 {
-                    string temp = fs.ReadLine();
+                    while (true)
+                    {
+                        string temp = fs.ReadLine();
 
-                    if (temp == null) break;
+                        if (temp == null) break;
 
-                    content += temp;
-                    fileSize += temp.Length;
+                        content += temp;
+                        fileSize += temp.Length;
+                    }
+
+                    dataString = fileSize.ToString() + content;
                 }
             }
+            catch (FileNotFoundException)
+            {
+                dataString = "-1";
+            }
 
-            return fileSize.ToString() + " " + content;
+            return dataString;
         }
     }
 }

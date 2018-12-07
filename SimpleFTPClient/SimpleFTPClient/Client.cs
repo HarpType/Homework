@@ -19,28 +19,34 @@ namespace SimpleFTPClient
                 string server;
                 int port;
 
-                Console.WriteLine("Введите сервер и порт");
+                Console.WriteLine("Введите сервер");
                 server = Console.ReadLine();
+                Console.WriteLine("Введите порт");
                 port = Int32.Parse(Console.ReadLine());
 
                 string command;
 
-                Console.WriteLine("Введите команду (exit - выход)");
+                Console.WriteLine("Введите команду");
                 command = Console.ReadLine();
-                if (command == "exit")
-                    return;
 
-                using (var client = new TcpClient(server, port))
+                try
                 {
-                    var stream = client.GetStream();
-                    var writer = new StreamWriter(stream);
+                    using (var client = new TcpClient(server, port))
+                    {
+                        var stream = client.GetStream();
+                        var writer = new StreamWriter(stream);
 
-                    writer.WriteLine(command);
-                    writer.Flush();
+                        writer.WriteLine(command);
+                        writer.Flush();
 
-                    var reader = new StreamReader(stream);
-                    var data = reader.ReadToEnd();
-                    Console.WriteLine($"Received: {data}");
+                        var reader = new StreamReader(stream);
+                        var data = reader.ReadToEnd();
+                        Console.WriteLine(data);
+                    }
+                }
+                catch (SocketException)
+                {
+                    Console.WriteLine("Невозможно подключиться к серверу");
                 }
             }
         }
