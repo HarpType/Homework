@@ -49,12 +49,7 @@ for:
     matrix:
      - solution_name: SimpleFTPServer/SimpleFTPServer.sln    
      - solution_name: SimpleFTPClient/SimpleFTPClient.sln
-      
-  before_build:
-    - cmd: SimpleFTPServer/SimpleFTPServer.sln    
-    - cmd: SimpleFTPClient/SimpleFTPClient.sln
   
   build_script:
-    - msbuild Control1/Control1.sln
     - msbuild SimpleFTPServer/SimpleFTPServer.sln    
     - msbuild SimpleFTPClient/SimpleFTPClient.sln
