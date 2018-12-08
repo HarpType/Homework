@@ -6,11 +6,17 @@ environment:
   matrix:
     - solution_name: Lazy/Lazy.sln
     - solution_name: MyThreadPool/MyThreadPool.sln
+    - solution_name: SimpleFTPServer/SimpleFTPServer.sln
+    - solution_name: SimpleFTPClient/SimpleFTPClient.sln
 
 before_build:
   - cmd: nuget restore Lazy/Lazy.sln
   - cmd: nuget restore MyThreadPool/MythreadPool.sln
+  - cmd: SimpleFTPServer/SimpleFTPServer.sln
+  - cmd: SimpleFTPClient/SimpleFTPClient.sln
 
 build_script:
   - msbuild Lazy/Lazy.sln
   - msbuild MyThreadPool/MyThreadPool.sln
+  - msbuild SimpleFTPServer/SimpleFTPServer.sln
+  - msbuild SimpleFTPClient/SimpleFTPClient.sln
