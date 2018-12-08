@@ -1,37 +1,52 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
-using System.Net;
 using System.Net.Sockets;
 using System.IO;
 
 namespace SimpleFTPClient
 {
+    /// <summary>
+    /// Класс, реализующий работу клиента.
+    /// </summary>
     class Client
     {
+        /// <summary>
+        /// Метод, отвечающий за связь клиента с сервером. Запрашивает адрес сервера и его порт
+        /// Отправляет команды клиента на выполнение серверу.
+        /// </summary>
         public void Start()
         {
             while (true)
             {
                 string server;
-                int port;
+                string port = "";
 
-                Console.WriteLine("Введите сервер");
+                Console.WriteLine("Введите адрес сервера");
                 server = Console.ReadLine();
-                Console.WriteLine("Введите порт");
-                port = Int32.Parse(Console.ReadLine());
 
-                string command;
+                while (true)
+                {
+                    Console.WriteLine("Введите порт");
+                    port = Console.ReadLine();
+
+                    if (!int.TryParse(port, out int p))
+                    {
+                        Console.WriteLine("Неверный формат");
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+
+                 string command;
 
                 Console.WriteLine("Введите команду");
                 command = Console.ReadLine();
 
                 try
                 {
-                    using (var client = new TcpClient(server, port))
+                    using (var client = new TcpClient(server, int.Parse(port)))
                     {
                         var stream = client.GetStream();
                         var writer = new StreamWriter(stream);
@@ -44,7 +59,7 @@ namespace SimpleFTPClient
                         Console.WriteLine(data);
                     }
                 }
-                catch (SocketException)
+                catch (Exception)
                 {
                     Console.WriteLine("Невозможно подключиться к серверу");
                 }

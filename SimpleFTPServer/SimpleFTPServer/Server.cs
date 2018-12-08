@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
@@ -24,8 +22,6 @@ namespace SimpleFTPServer
         public void Start()
         {
             listener.Start();
-
-            Console.WriteLine("Listening...");
 
             while (true)
             {
@@ -62,6 +58,7 @@ namespace SimpleFTPServer
             }
             else
             {
+                receiveData = "Команда не найдена";
             }
 
             var writer = new StreamWriter(stream);
@@ -116,27 +113,21 @@ namespace SimpleFTPServer
         {
             string dataString;
 
-            long fileSize = 0;
-            string content = "";
+            long fileLength;
+            byte[] content;
 
             try
             {
-                using (StreamReader fs = new StreamReader(filePath))
+                using (var file = File.Open(filePath, FileMode.Open, FileAccess.Read))
                 {
-                    while (true)
-                    {
-                        string temp = fs.ReadLine();
-
-                        if (temp == null) break;
-
-                        content += temp;
-                        fileSize += temp.Length;
-                    }
-
-                    dataString = fileSize.ToString() + content;
+                    fileLength = file.Length;
                 }
+
+                content = File.ReadAllBytes(filePath);
+
+                dataString = fileLength.ToString() + " " + Encoding.UTF8.GetString(content);
             }
-            catch (FileNotFoundException)
+            catch (Exception)
             {
                 dataString = "-1";
             }
