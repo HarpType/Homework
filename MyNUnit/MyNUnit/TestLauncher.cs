@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MyNUnit
 {
-    class TestLauncher
+    public class TestLauncher
     {
         public TestLauncher(string path)
         {
