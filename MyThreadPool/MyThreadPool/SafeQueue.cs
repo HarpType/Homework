@@ -40,12 +40,6 @@ namespace MyThreadPool
         /// <summary>
         /// Свойство, в котором хранится размер очереди.
         /// </summary>
-        public int Size
-        {
-            get
-            {
-                return queue.Count;
-            }
-        }
+        public int Size => queue.Count;
     }
 }

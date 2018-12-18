@@ -12,11 +12,11 @@ namespace MyThreadPoolTest
         [TestMethod]
         public void SimpleTest()
         {
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(1);
+            var threadPool = new MyThreadPool.MyThreadPool(1);
 
             string SayHello() => "Hello";
 
-            MyTask<string> helloTask = threadPool.AddTask<string>(SayHello);
+            var helloTask = threadPool.AddTask<string>(SayHello);
 
             if (!helloTask.IsCompleted)
             {
@@ -29,13 +29,13 @@ namespace MyThreadPoolTest
         [TestMethod]
         public void SimpleContinueWithTest()
         {
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(1);
+            var threadPool = new MyThreadPool.MyThreadPool(1);
 
             string SayHello() => "Hello";
-            MyTask<string> helloTask = threadPool.AddTask<string>(SayHello);
+            var helloTask = threadPool.AddTask(SayHello);
 
             string SayWorld(string str) => str + " World!";
-            MyTask<string> helloworldTask = helloTask.ContinueWith<string>(SayWorld);
+            var helloworldTask = helloTask.ContinueWith(SayWorld);
 
             if (!helloTask.IsCompleted)
             {
@@ -50,7 +50,7 @@ namespace MyThreadPoolTest
         public void ThreadsCountTest()
         {
             const int n = 5;
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
+            var threadPool = new MyThreadPool.MyThreadPool(n);
 
             Assert.AreEqual(n, threadPool.AliveThreadsCount());
         }
@@ -59,7 +59,7 @@ namespace MyThreadPoolTest
         public void BigPoolTest()
         {
             const int n = 3;
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
+            var threadPool = new MyThreadPool.MyThreadPool(n);
 
             string SayHello() => "Hello";
             string SayHelloWorld(string hello) => hello + " world!";
@@ -71,15 +71,15 @@ namespace MyThreadPoolTest
             string MakeChoice(bool b) => b ? "Good" : "Bad";
             string Introduce(string str) => str + " boy";
 
-            MyTask<string> helloTask = threadPool.AddTask(SayHello);
-            MyTask<int> takefiveTask = threadPool.AddTask(TakeFive);
-            MyTask<bool> gettrueTask = threadPool.AddTask(GetTrue);
+            var helloTask = threadPool.AddTask(SayHello);
+            var takefiveTask = threadPool.AddTask(TakeFive);
+            var gettrueTask = threadPool.AddTask(GetTrue);
 
-            MyTask<string> helloworldTask = helloTask.ContinueWith(SayHelloWorld);
-            MyTask<int> addTask = takefiveTask.ContinueWith(Add);
-            MyTask<string> choiceTask = gettrueTask.ContinueWith(MakeChoice);
+            var helloworldTask = helloTask.ContinueWith(SayHelloWorld);
+            var addTask = takefiveTask.ContinueWith(Add);
+            var choiceTask = gettrueTask.ContinueWith(MakeChoice);
 
-            MyTask<string> introduceTask = choiceTask.ContinueWith(Introduce);
+            var introduceTask = choiceTask.ContinueWith(Introduce);
 
 
             Assert.AreEqual("Hello", helloTask.Result);
@@ -100,7 +100,7 @@ namespace MyThreadPoolTest
         public void ShutdownTest()
         {
             const int n = 5;
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(n);
+            var threadPool = new MyThreadPool.MyThreadPool(n);
 
             int Pow()
             {
@@ -114,7 +114,7 @@ namespace MyThreadPoolTest
                 return res;
             }
 
-            MyTask<int> heavyTask = threadPool.AddTask(Pow);
+            var heavyTask = threadPool.AddTask(Pow);
 
             Assert.AreEqual(n, threadPool.AliveThreadsCount());
 
@@ -131,7 +131,7 @@ namespace MyThreadPoolTest
         [TestMethod]
         public void ExceptionTest()
         {
-            MyThreadPool.MyThreadPool threadPool = new MyThreadPool.MyThreadPool(1);
+            var threadPool = new MyThreadPool.MyThreadPool(1);
 
             int ZeroDivide()
             {
@@ -139,7 +139,7 @@ namespace MyThreadPoolTest
                 return 5 / x;
             }
 
-            MyTask<int> wrongTask = threadPool.AddTask(ZeroDivide);
+            var wrongTask = threadPool.AddTask(ZeroDivide);
 
             Action wrongAction =
                 () => 
