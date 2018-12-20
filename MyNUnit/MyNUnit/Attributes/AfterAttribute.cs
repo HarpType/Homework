@@ -3,7 +3,7 @@
 namespace MyNUnit.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    class After : Attribute
+    public class AfterAttribute : Attribute
     {
     }
 }

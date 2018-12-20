@@ -13,13 +13,13 @@ namespace MyNUnit.Handlers
     /// </summary>
     public class TypeTestHandler
     {
-        private List<MethodTestHandler> afterClassMethods;
-        private List<MethodTestHandler> beforeClassMethods;
+        private List<MethodTestHandler> afterClassMethods = new List<MethodTestHandler>();
+        private List<MethodTestHandler> beforeClassMethods = new List<MethodTestHandler>();
 
-        private List<MethodTestHandler> afterMethods;
-        private List<MethodTestHandler> beforeMethods;
+        private List<MethodTestHandler> afterMethods = new List<MethodTestHandler>();
+        private List<MethodTestHandler> beforeMethods = new List<MethodTestHandler>();
 
-        private List<MethodTestHandler> testsMethods;
+        private List<MethodTestHandler> testsMethods = new List<MethodTestHandler>();
 
         private object instance;
 
@@ -35,28 +35,29 @@ namespace MyNUnit.Handlers
             foreach (var method in type.GetMethods())
             {
                 var testMethod = new MethodTestHandler(method);
-                foreach (var attr in testMethod.Info.GetCustomAttributes())
+                foreach (var attr in method.GetCustomAttributes())
                 {
                     var attrType = attr.GetType();
 
-                    if (attrType == typeof(Attributes.AfterClass))
+                    if (attrType == typeof(Attributes.AfterClassAttribute))
                     {
                         afterClassMethods.Add(testMethod);
                     }
-                    else if (attrType == typeof(Attributes.BeforeClass))
+                    else if (attrType == typeof(Attributes.BeforeClassAttribute))
                     {
                         beforeClassMethods.Add(testMethod);
                     }
-                    else if (attrType == typeof(Attributes.After))
+                    else if (attrType == typeof(Attributes.AfterAttribute))
                     {
                         afterMethods.Add(testMethod);
                     }
-                    else if (attrType == typeof(Attributes.Before))
+                    else if (attrType == typeof(Attributes.BeforeAttribute))
                     {
                         beforeMethods.Add(testMethod);
                     }
-                    else if (attrType == typeof(Attributes.Test))
+                    else if (attrType == typeof(Attributes.TestAttribute))
                     {
+                        testMethod.TestAttribute = (Attributes.TestAttribute)attr;
                         testsMethods.Add(testMethod);
                     }
                     else
@@ -70,34 +71,77 @@ namespace MyNUnit.Handlers
         /// <summary>
         /// По порядку запускает тестовые методы.
         /// </summary>
-        public void RunTests()
+        public List<TestInfo> RunTests()
         {
-            RunMethods(afterClassMethods);
+            var testsInfo = new List<TestInfo>();
 
-            RunMethods(afterMethods);
+            testsInfo.AddRange(RunInTasks(beforeClassMethods));
 
-            RunMethods(testsMethods);
+            testsInfo.AddRange(RunWithInTasks(beforeMethods, afterMethods, testsMethods));
 
-            RunMethods(beforeMethods);
+            testsInfo.AddRange(RunInTasks(afterClassMethods));
 
-            RunMethods(beforeClassMethods);
+            return testsInfo;
         }
 
         /// <summary>
         /// Запускает лист методов.
         /// </summary>
         /// <param name="methods"></param>
-        private void RunMethods(List<MethodTestHandler> methods)
+        private List<TestInfo> RunInTasks(List<MethodTestHandler> methods)
         {
             Task[] tasks = new Task[methods.Count];
 
-            for (int i = 0; i < methods.Count; i++)
+            for (int i = 0; i < methods.Count; ++i)
             {
-                tasks[i] = new Task(() => afterClassMethods[i].Run(instance));
+                int j = i;
+                tasks[i] = new Task<TestInfo>(methods[j].Run, instance);
                 tasks[i].Start();
             }
 
-            Task.WaitAll(tasks);
+            var testsInfo = new List<TestInfo>();
+
+            foreach (Task<TestInfo> task in tasks)
+            {
+                testsInfo.Add(task.Result);
+            }
+
+            return testsInfo;
+        }
+
+        private List<TestInfo> RunWithInTasks(List<MethodTestHandler> beforeMethods,
+            List<MethodTestHandler> afterMethods,
+            List<MethodTestHandler> testMethods)
+        {
+            Task[] testTasks = new Task[testMethods.Count];
+
+            var globalTestsInfo = new List<TestInfo>();
+
+            for (int i = 0; i < testMethods.Count; ++i)
+            {
+                int j = i;
+                testTasks[i] = new Task<List<TestInfo>>(() =>
+                {
+                    var localTestsInfo = new List<TestInfo>();
+
+                    localTestsInfo.AddRange(RunInTasks(beforeMethods));
+
+                    localTestsInfo.Add(testMethods[j].Run(instance));
+
+                    localTestsInfo.AddRange(RunInTasks(afterMethods));
+
+                    return localTestsInfo;
+                });
+
+                testTasks[i].Start();
+            }
+
+            foreach (Task<List<TestInfo>> task in testTasks)
+            {
+                globalTestsInfo.AddRange(task.Result);
+            }
+
+            return globalTestsInfo;
         }
     }
 }

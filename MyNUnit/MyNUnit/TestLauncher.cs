@@ -10,7 +10,7 @@ namespace MyNUnit
 {
     public class TestLauncher
     {
-        public TestLauncher(string path)
+        static public List<TestInfo> Launch(string path)
         {
             var dir = new DirectoryInfo(path);
 
@@ -21,35 +21,41 @@ namespace MyNUnit
 
             var filesPath = GetAssemblyFiles(dir);
 
-            RunAssembly(filesPath);
+            List<TestInfo> testsInfo = RunAssembly(filesPath);
+
+            return testsInfo;
         }
 
-        private string[] GetAssemblyFiles(DirectoryInfo dir)
+        static private string[] GetAssemblyFiles(DirectoryInfo dir)
         {
             var dllFiles = dir.GetFiles("*.dll");
-            var exeFiles = dir.GetFiles("*.exe");
+            //var exeFiles = dir.GetFiles("*.exe");
 
-            string[] assemblyFiles = new string[dllFiles.Length + exeFiles.Length];
+            string[] assemblyFiles = new string[dllFiles.Length];
 
             for (int i = 0; i < dllFiles.Length; i++)
             {
-                assemblyFiles[i] = dllFiles[i].ToString();
+                assemblyFiles[i] = dllFiles[i].FullName;
             }
 
-            for (int i = dllFiles.Length; i < dllFiles.Length + exeFiles.Length; i++)
-            {
-                assemblyFiles[i] = exeFiles[i].ToString();
-            }
+            //for (int i = dllFiles.Length; i < dllFiles.Length + exeFiles.Length; i++)
+            //{
+            //    assemblyFiles[i] = exeFiles[i].ToString();
+            //}
 
             return assemblyFiles;
         }
 
-        private void RunAssembly(string[] assmPath)
+        static private List<TestInfo> RunAssembly(string[] assmPath)
         {
+            var assemblyTestsInfo = new List<TestInfo>();
+
             foreach (var path in assmPath)
             {
-                RunTestFile(path);
+                assemblyTestsInfo.AddRange(RunTestFile(path));
             }
+
+            return assemblyTestsInfo;
         }
 
         /// <summary>
@@ -57,23 +63,33 @@ namespace MyNUnit
         /// обработчик
         /// </summary>
         /// <param name="testPath">Путь до файла</param>
-        private void RunTestFile(string testPath)
+        static private List<TestInfo> RunTestFile(string testPath)
         {
             var types = Assembly.LoadFile(testPath).GetExportedTypes();
 
+            var typesTestInfo = new List<TestInfo>();
+
             foreach (var type in types)
             {
-                RunType(type);
+                typesTestInfo.AddRange(RunType(type));
             }
+
+            return typesTestInfo;
         }
 
         /// <summary>
-        /// Обнаруживает методы типа и тестирует их
+        /// Обнаруживает методы типа и запускает процесс тестирования
         /// </summary>
         /// <param name="type">Тип, который необходимо обработать</param>
-        private void RunType(Type type)
+        static private List<TestInfo> RunType(Type type)
         {
+            var testsInfo = new List<TestInfo>();
 
+            var typeHandler = new Handlers.TypeTestHandler(type);
+
+            testsInfo = typeHandler.RunTests();
+
+            return testsInfo;
         }
     }
 }

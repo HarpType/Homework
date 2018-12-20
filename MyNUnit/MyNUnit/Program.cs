@@ -16,7 +16,10 @@ namespace MyNUnit
                 return;
             }
 
-            Console.WriteLine();
+
+            TestConsoleInfo.WriteTestInfo(TestLauncher.Launch(args[0]));
+
+            Console.ReadKey();
             
         }
     }
