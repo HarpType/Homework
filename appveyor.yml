@@ -55,6 +55,20 @@ for:
     - cmd: SimpleFTPClient/SimpleFTPClient.sln
   
   build_script:
-    - msbuild Control1/Control1.sln
     - msbuild SimpleFTPServer/SimpleFTPServer.sln    
     - msbuild SimpleFTPClient/SimpleFTPClient.sln
+
+-
+  branches:
+    only:
+      - mynunit
+
+  environment:
+    matrix:
+     - solution_name: MyNUnit/MyNUnit.sln    
+      
+  before_build:
+    - cmd: MyNUnit/MyNUnit.sln    
+  
+  build_script:
+    - msbuild MyNUnit/MyNUnit.sln
