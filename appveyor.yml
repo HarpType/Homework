@@ -58,17 +58,10 @@ for:
     - msbuild SimpleFTPServer/SimpleFTPServer.sln    
     - msbuild SimpleFTPClient/SimpleFTPClient.sln
 
--
-  branches:
-    only:
-      - mynunit
-
-  environment:
-    matrix:
-     - solution_name: MyNUnit/MyNUnit.sln    
-      
-  before_build:
-    - cmd: MyNUnit/MyNUnit.sln    
-  
-  build_script:
-    - msbuild MyNUnit/MyNUnit.sln
+branches: 
+  only:
+    - mynunit
+before_build:
+  - nuget restore MyNUnit/MyNUnit.sln
+build:
+  project: MyNUnit/MyNUnit.sln
