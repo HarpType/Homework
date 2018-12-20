@@ -22,15 +22,14 @@ namespace MyNUnit
                 throw new ArgumentNullException();
 
             var dir = new DirectoryInfo(path);
-
             if (!dir.Exists)
             {
                 throw new DirectoryNotFoundException("Каталог не найден");
             }
 
-            var filesPath = GetAssemblyFiles(dir);
+            FileInfo[] assmFiles= GetAssemblyFiles(dir);
 
-            List<TestInfo> testsInfo = RunAssembly(filesPath);
+            List<TestInfo> testsInfo = RunAssembly(assmFiles);
 
             return testsInfo;
         }
@@ -40,33 +39,25 @@ namespace MyNUnit
         /// </summary>
         /// <param name="dir">Директория, в которой необходимо выполнить поиск.</param>
         /// <returns>Массив названий сборок.</returns>
-        static private string[] GetAssemblyFiles(DirectoryInfo dir)
+        static private FileInfo[] GetAssemblyFiles(DirectoryInfo dir) 
+            => dir.GetFiles("*.dll");
+
+        /// <summary>
+        /// Запускает процесс тестирования для разных файлов сборок в разных потоках.
+        /// </summary>
+        /// <param name="assmFiles">Сборки, в которых необходимо запустить тестирование.</param>
+        /// <returns>Информация о каждом выполненном тесте в каждой сборке.</returns>
+        static private List<TestInfo> RunAssembly(FileInfo[] assmFiles)
         {
-            var dllFiles = dir.GetFiles("*.dll");
-
-            string[] assemblyFiles = new string[dllFiles.Length];
-
-            for (int i = 0; i < dllFiles.Length; i++)
-            {
-                assemblyFiles[i] = dllFiles[i].FullName;
-            }
-
-            return assemblyFiles;
-        }
-
-        static private List<TestInfo> RunAssembly(string[] assmPath)
-        {
-            var assemblyTestsInfo = new List<TestInfo>();
-
-            var tasks = new Task<List<TestInfo>>[assmPath.Length];
-
-            for (int i = 0; i < assmPath.Length; ++i)
+            var tasks = new Task<List<TestInfo>>[assmFiles.Length];
+            for (int i = 0; i < assmFiles.Length; ++i)
             {
                 int j = i;
-                tasks[i] = new Task<List<TestInfo>>(() => { return RunTestFile(assmPath[j]); });
+                tasks[i] = new Task<List<TestInfo>>(() => { return RunTestFile(assmFiles[j]); });
                 tasks[i].Start();
             }
 
+            var assemblyTestsInfo = new List<TestInfo>();
             foreach (var task in tasks)
             {
                 assemblyTestsInfo.AddRange(task.Result);
@@ -77,17 +68,14 @@ namespace MyNUnit
 
         /// <summary>
         /// Обнаруживает типы исходного файла и для каждого запускает 
-        /// обработчик
+        /// процесс тестирования в новом потоке.
         /// </summary>
-        /// <param name="testPath">Путь до файла</param>
-        static private List<TestInfo> RunTestFile(string testPath)
+        /// <param name="testPath">Файл сборки.</param>
+        static private List<TestInfo> RunTestFile(FileInfo fileName)
         {
-            var types = Assembly.LoadFile(testPath).GetExportedTypes();
-
-            var typesTestInfo = new List<TestInfo>();
+            var types = Assembly.LoadFile(fileName.FullName).GetExportedTypes();
 
             var tasks = new Task<List<TestInfo>>[types.Length];
-
             for (int i = 0; i < types.Length; ++i)
             {
                 int j = i;
@@ -95,26 +83,26 @@ namespace MyNUnit
                 tasks[i].Start();
             }
 
+            var typesTestInfo = new List<TestInfo>();
             foreach (var type in types)
             {
                 typesTestInfo.AddRange(RunType(type));
             }
 
-            typesTestInfo.ForEach((test) => test.Path = testPath);
+            typesTestInfo.ForEach((test) => test.FileName = fileName.Name);
 
             return typesTestInfo;
         }
 
         /// <summary>
-        /// Обнаруживает методы типа и запускает процесс тестирования
+        /// Обнаруживает методы типа и для каждого запускает процесс тестирования.
         /// </summary>
-        /// <param name="type">Тип, который необходимо обработать</param>
+        /// <param name="type">Тип, который необходимо обработать.</param>
         static private List<TestInfo> RunType(Type type)
         {
-            var testsInfo = new List<TestInfo>();
-
             var typeHandler = new Handlers.TypeTestHandler(type);
 
+            var testsInfo = new List<TestInfo>();
             testsInfo = typeHandler.RunTests();
 
             return testsInfo;

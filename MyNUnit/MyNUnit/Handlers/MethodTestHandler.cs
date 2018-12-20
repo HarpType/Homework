@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 
 namespace MyNUnit.Handlers
@@ -9,15 +8,30 @@ namespace MyNUnit.Handlers
     /// </summary>
     class MethodTestHandler
     {
+        /// <summary>
+        /// Содержит информацию о методе.
+        /// </summary>
         public MethodInfo Info { get; }
 
+        /// <summary>
+        /// Содержит информацию о аттрибуте, если таковая имеется.
+        /// </summary>
         public Attributes.TestAttribute TestAttribute { get; set; } = null;
 
+        /// <summary>
+        /// Конструктор класса. 
+        /// </summary>
+        /// <param name="method">Метод, для которого необходимо запустить тестирование</param>
         public MethodTestHandler(MethodInfo method)
         {
             Info = method;            
         }
 
+        /// <summary>
+        /// Запускает тестирование метода.
+        /// </summary>
+        /// <param name="instance">Объект, которому принадлежит метод.</param>
+        /// <returns>Информация о тесте.</returns>
         public TestInfo Run(object instance)
         {
             var testInfo = new TestInfo();

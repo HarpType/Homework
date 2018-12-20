@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MyNUnit.Handlers
 {
 
     /// <summary>
-    /// Класс, хронящий в себе информацию о типе тестируемого объекта
+    /// Класс, хронящий в себе информацию о типе тестируемого объекта.
     /// </summary>
     public class TypeTestHandler
     {
+        /// <summary>
+        /// Листы, которые хранят методы в зависимости от значений аттрибутов.
+        /// </summary>
         private List<MethodTestHandler> afterClassMethods = new List<MethodTestHandler>();
         private List<MethodTestHandler> beforeClassMethods = new List<MethodTestHandler>();
 
@@ -21,7 +22,7 @@ namespace MyNUnit.Handlers
 
         private List<MethodTestHandler> testsMethods = new List<MethodTestHandler>();
 
-        private object instance;
+        private readonly object instance;
 
         /// <summary>
         /// Конструктор класса. Создаёт объект типа и распределяет его методы 
@@ -34,35 +35,45 @@ namespace MyNUnit.Handlers
 
             foreach (var method in type.GetMethods())
             {
-                var testMethod = new MethodTestHandler(method);
                 foreach (var attr in method.GetCustomAttributes())
                 {
                     var attrType = attr.GetType();
 
                     if (attrType == typeof(Attributes.AfterClassAttribute))
                     {
+                        var testMethod = new MethodTestHandler(method);
                         afterClassMethods.Add(testMethod);
+
+                        break;
                     }
                     else if (attrType == typeof(Attributes.BeforeClassAttribute))
                     {
+                        var testMethod = new MethodTestHandler(method);
                         beforeClassMethods.Add(testMethod);
+
+                        break;
                     }
                     else if (attrType == typeof(Attributes.AfterAttribute))
                     {
+                        var testMethod = new MethodTestHandler(method);
                         afterMethods.Add(testMethod);
+
+                        break;
                     }
                     else if (attrType == typeof(Attributes.BeforeAttribute))
                     {
+                        var testMethod = new MethodTestHandler(method);
                         beforeMethods.Add(testMethod);
+
+                        break;
                     }
                     else if (attrType == typeof(Attributes.TestAttribute))
                     {
+                        var testMethod = new MethodTestHandler(method);
                         testMethod.TestAttribute = (Attributes.TestAttribute)attr;
                         testsMethods.Add(testMethod);
-                    }
-                    else
-                    {
-                        continue;
+
+                        break;
                     }
                 }
             }
@@ -85,9 +96,10 @@ namespace MyNUnit.Handlers
         }
 
         /// <summary>
-        /// Запускает лист методов.
+        /// Независимо запускает заданный лист методов.
         /// </summary>
-        /// <param name="methods"></param>
+        /// <param name="methods">Набор методов, которые необходимо протестировать.</param>
+        /// <returns>Информация о выполненных тестах.</returns>        
         private List<TestInfo> RunInTasks(List<MethodTestHandler> methods)
         {
             Task[] tasks = new Task[methods.Count];
@@ -100,7 +112,6 @@ namespace MyNUnit.Handlers
             }
 
             var testsInfo = new List<TestInfo>();
-
             foreach (Task<TestInfo> task in tasks)
             {
                 testsInfo.Add(task.Result);
@@ -109,13 +120,19 @@ namespace MyNUnit.Handlers
             return testsInfo;
         }
 
+        /// <summary>
+        /// Для каждого теста запускает набор тестов, которые необходимо 
+        /// выполнять до и после.
+        /// </summary>
+        /// <param name="beforeMethods">Тесты, которые необходимо выполнять перед каждым основным тестом.</param>
+        /// <param name="afterMethods">Тесты, которые необходимо выполнять после каждого основного теста</param>
+        /// <param name="testMethods">Набор основных тестов.</param>
+        /// <returns>Информация о выполненных тестах.</returns>
         private List<TestInfo> RunWithInTasks(List<MethodTestHandler> beforeMethods,
             List<MethodTestHandler> afterMethods,
             List<MethodTestHandler> testMethods)
         {
             Task[] testTasks = new Task[testMethods.Count];
-
-            var globalTestsInfo = new List<TestInfo>();
 
             for (int i = 0; i < testMethods.Count; ++i)
             {
@@ -136,6 +153,7 @@ namespace MyNUnit.Handlers
                 testTasks[i].Start();
             }
 
+            var globalTestsInfo = new List<TestInfo>();
             foreach (Task<List<TestInfo>> task in testTasks)
             {
                 globalTestsInfo.AddRange(task.Result);

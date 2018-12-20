@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyNUnit
 {
-    class TestConsoleInfo
+    /// <summary>
+    /// Класс, предоставляющий интерфейс для вывода информации о тестах на экран.
+    /// </summary>
+    public class TestConsoleInfo
     {
+        /// <summary>
+        /// Метод выводит информацию о тестах на экран.
+        /// </summary>
+        /// <param name="testsInfo">Информация о тестах.</param>
         static public void WriteTestInfo(List<TestInfo> testsInfo)
         {
             foreach (var info in testsInfo)
             {
-                Console.WriteLine($"Test Name: {info.Path + " " + info.TypeName + " " + info.Name}");
+                Console.WriteLine($"Test Name: {info.FileName + " " + info.TypeName + " " + info.Name}");
                 if (info.Successfull)
                 {
                     Console.WriteLine("Test has been completed successfully");
