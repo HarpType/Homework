@@ -12,7 +12,7 @@ namespace MyNUnit
         {
             foreach (var info in testsInfo)
             {
-                Console.WriteLine($"Test Name: {info.TypeName + " " + info.Name}");
+                Console.WriteLine($"Test Name: {info.Path + " " + info.TypeName + " " + info.Name}");
                 if (info.Successfull)
                 {
                     Console.WriteLine("Test has been completed successfully");

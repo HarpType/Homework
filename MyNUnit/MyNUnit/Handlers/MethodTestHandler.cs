@@ -41,6 +41,10 @@ namespace MyNUnit.Handlers
                 Info.Invoke(instance, null);
 
                 testInfo.Successfull = true;
+
+                if (TestAttribute != null)
+                    if (TestAttribute.Expected != null)
+                        testInfo.Successfull = false;
             }
             catch (TargetInvocationException ex)
             {

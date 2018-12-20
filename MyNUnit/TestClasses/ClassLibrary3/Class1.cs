@@ -1,15 +1,14 @@
 ﻿using System;
 using MyNUnit.Attributes;
-using System.Threading;
 
-namespace ClassLibrary2
+namespace ClassLibrary4
 {
     public class Class1
     {
         public int t = 0;
 
-        [BeforeClass]
-        public void BeforeClassMethod()
+        [Before]
+        public void BeforeMethod()
         {
             t = 10;
         }
@@ -23,8 +22,8 @@ namespace ClassLibrary2
             }
         }
 
-        [AfterClass]
-        public void AfterClassMethod()
+        [After]
+        public void AfterMethod()
         {
             t = 0;
         }

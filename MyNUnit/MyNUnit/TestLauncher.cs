@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MyNUnit
 {
+    /// <summary>
+    /// Класс, запускающий сеанс тестирования.
+    /// </summary>
     public class TestLauncher
     {
+        /// <summary>
+        /// Запускает тестирование.
+        /// </summary>
+        /// <param name="path">Путь до директории, в которой находятся сборки.</param>
+        /// <returns>Лист с информацией о каждом выполненном тесте.</returns>
         static public List<TestInfo> Launch(string path)
         {
+            if (path == null)
+                throw new ArgumentNullException();
+
             var dir = new DirectoryInfo(path);
 
             if (!dir.Exists)
@@ -26,10 +35,14 @@ namespace MyNUnit
             return testsInfo;
         }
 
+        /// <summary>
+        /// Находит и возвращает файлы сборок в заданной директории.
+        /// </summary>
+        /// <param name="dir">Директория, в которой необходимо выполнить поиск.</param>
+        /// <returns>Массив названий сборок.</returns>
         static private string[] GetAssemblyFiles(DirectoryInfo dir)
         {
             var dllFiles = dir.GetFiles("*.dll");
-            //var exeFiles = dir.GetFiles("*.exe");
 
             string[] assemblyFiles = new string[dllFiles.Length];
 
@@ -38,11 +51,6 @@ namespace MyNUnit
                 assemblyFiles[i] = dllFiles[i].FullName;
             }
 
-            //for (int i = dllFiles.Length; i < dllFiles.Length + exeFiles.Length; i++)
-            //{
-            //    assemblyFiles[i] = exeFiles[i].ToString();
-            //}
-
             return assemblyFiles;
         }
 
@@ -50,9 +58,18 @@ namespace MyNUnit
         {
             var assemblyTestsInfo = new List<TestInfo>();
 
-            foreach (var path in assmPath)
+            var tasks = new Task<List<TestInfo>>[assmPath.Length];
+
+            for (int i = 0; i < assmPath.Length; ++i)
             {
-                assemblyTestsInfo.AddRange(RunTestFile(path));
+                int j = i;
+                tasks[i] = new Task<List<TestInfo>>(() => { return RunTestFile(assmPath[j]); });
+                tasks[i].Start();
+            }
+
+            foreach (var task in tasks)
+            {
+                assemblyTestsInfo.AddRange(task.Result);
             }
 
             return assemblyTestsInfo;
@@ -69,10 +86,21 @@ namespace MyNUnit
 
             var typesTestInfo = new List<TestInfo>();
 
+            var tasks = new Task<List<TestInfo>>[types.Length];
+
+            for (int i = 0; i < types.Length; ++i)
+            {
+                int j = i;
+                tasks[i] = new Task<List<TestInfo>>(() => { return RunType(types[j]); });
+                tasks[i].Start();
+            }
+
             foreach (var type in types)
             {
                 typesTestInfo.AddRange(RunType(type));
             }
+
+            typesTestInfo.ForEach((test) => test.Path = testPath);
 
             return typesTestInfo;
         }
