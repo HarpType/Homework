@@ -116,13 +116,10 @@ namespace MyThreadPoolTest
 
             Assert.AreEqual(n, threadPool.AliveThreadsCount());
 
+            Thread.Sleep(100);
+
             threadPool.Shutdown();
-
-            Thread.Sleep(10);
-            Assert.AreEqual(1, threadPool.AliveThreadsCount());
             Assert.AreEqual(Pow(), heavyTask.Result);
-
-            Thread.Sleep(500);
             Assert.AreEqual(0, threadPool.AliveThreadsCount());
         }
 

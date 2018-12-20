@@ -13,11 +13,13 @@ namespace MyThreadPool
         private CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken token;
 
-        private readonly int threadCount;
+        private readonly int threadCount = 0;
+        private int stopCount = 0;
 
         private SafeQueue<Action> taskQueue = new SafeQueue<Action>();
         private Thread[] threads;
         private ManualResetEvent threadEvent = new ManualResetEvent(false);
+        private ManualResetEvent allstopEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Инициализирует и запускает фиксированное количество потоков.
@@ -74,13 +76,24 @@ namespace MyThreadPool
             {
                 threadEvent.WaitOne();
 
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-                else if (taskQueue.Size == 1)
+                if (taskQueue.Size == 1)
                 {
                     threadEvent.Reset();
+                }
+
+                if (token.IsCancellationRequested)
+                {
+                    threadEvent.Set();
+
+                    lock (lockObject)
+                    {
+                        stopCount++;
+                    }
+
+                    if (stopCount == threadCount)
+                        allstopEvent.Set();
+
+                    return;
                 }
 
                 Action action = null;
@@ -112,6 +125,8 @@ namespace MyThreadPool
             cts.Dispose();
 
             threadEvent.Set();
+
+            allstopEvent.WaitOne();
         }
 
 

@@ -32,9 +32,8 @@ namespace MyThreadPool
             T el;
             lock (lockObject)
             {
-                el = queue.Dequeue();
+                return queue.Dequeue();
             }
-            return el;
         }
 
         /// <summary>
