@@ -25,6 +25,7 @@ for:
     - msbuild MyThreadPool/MyThreadPool.sln
     - msbuild Control1/Control1.sln
 
+-
 branches: 
   only:
     - mythreadpool
@@ -66,6 +67,7 @@ build:
     - msbuild SimpleFTPServer/SimpleFTPServer.sln    
     - msbuild SimpleFTPClient/SimpleFTPClient.sln
 
+-
 branches: 
   only:
     - mynunit
