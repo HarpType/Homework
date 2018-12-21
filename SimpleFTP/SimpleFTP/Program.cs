@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleFTPClient
+namespace SimpleFTP
 {
     class Program
     {
         static void Main(string[] args)
         {
-            string command = "1 ";
-            var data = Client.SendRequest(command).Result;
         }
     }
 }

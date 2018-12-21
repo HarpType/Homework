@@ -8,13 +8,14 @@ namespace SimpleFTPClient
     /// <summary>
     /// Класс, реализующий работу клиента.
     /// </summary>
-    class Client
+    public class Client
     {
         private const int port = 8238;
 
 
         public static async Task<string> SendRequest(string command)
         {
+            string data = "";
             try
             {
                 using (var client = new TcpClient("127.0.0.1", port))
@@ -26,15 +27,15 @@ namespace SimpleFTPClient
                     await writer.FlushAsync();
 
                     var reader = new StreamReader(stream);
-                    var data = await reader.ReadToEndAsync();
-
-                    return data;
+                    data = await reader.ReadToEndAsync();
                 }
             }
             catch (Exception)
             {
 
             }
+
+            return data;
         }
         /// <summary>
         /// Метод, отвечающий за связь клиента с сервером. Запрашивает адрес сервера и его порт

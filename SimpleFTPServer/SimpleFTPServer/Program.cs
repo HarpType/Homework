@@ -7,7 +7,7 @@ namespace SimpleFTPServer
         {
             var server = new Server();
 
-            server.Start();
+            Server.Start();
         }
     }
 }

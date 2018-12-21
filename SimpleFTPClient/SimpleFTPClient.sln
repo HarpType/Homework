@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleFTPClient", "SimpleFTPClient\SimpleFTPClient.csproj", "{75A544AF-8C98-4655-B36B-F0B4330F782D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleFTPServer", "..\SimpleFTPServer\SimpleFTPServer\SimpleFTPServer.csproj", "{522CB48B-E125-46E7-8BD8-A98638011862}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{75A544AF-8C98-4655-B36B-F0B4330F782D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75A544AF-8C98-4655-B36B-F0B4330F782D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75A544AF-8C98-4655-B36B-F0B4330F782D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{522CB48B-E125-46E7-8BD8-A98638011862}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{522CB48B-E125-46E7-8BD8-A98638011862}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{522CB48B-E125-46E7-8BD8-A98638011862}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{522CB48B-E125-46E7-8BD8-A98638011862}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
