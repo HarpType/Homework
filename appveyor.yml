@@ -61,5 +61,5 @@ branches:
     - mythreadpool
 before_build:
   - nuget restore MyThreadPool/MythreadPool.sln
-build:
-  project: MyThreadPool/MyThreadPool.sln
+build_script:
+  - msbuild MyThreadPool/MyThreadPool.sln
