@@ -9,6 +9,7 @@ namespace MyThreadPool
     public class MyThreadPool
     {
         private readonly object lockObject = new object();
+        private readonly object eventLockObject = new object();
 
         private CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken token;
@@ -57,11 +58,23 @@ namespace MyThreadPool
 
             Action action = () => newTask.Compute();
 
-            taskQueue.Enqueue(action);
-
-            threadEvent.Set();
+            AddToQueue(action);
 
             return newTask;
+        }
+
+        /// <summary>
+        /// Метод, позваляющий добавить action в очередь пула.
+        /// </summary>
+        /// <param name="action"></param>
+        private void AddToQueue(Action action)
+        {
+            lock (eventLockObject)
+            {
+                taskQueue.Enqueue(action);
+
+                threadEvent.Set();
+            }
         }
 
 
@@ -76,9 +89,12 @@ namespace MyThreadPool
             {
                 threadEvent.WaitOne();
 
-                if (taskQueue.Size == 1)
+                lock (eventLockObject)
                 {
-                    threadEvent.Reset();
+                    if (taskQueue.Size == 1)
+                    {
+                        threadEvent.Reset();
+                    }
                 }
 
                 if (token.IsCancellationRequested)
@@ -128,7 +144,6 @@ namespace MyThreadPool
 
             allstopEvent.WaitOne();
         }
-
 
         /// <summary>
         /// Считает все активные потоки и возвращает их количество.
@@ -238,9 +253,7 @@ namespace MyThreadPool
 
                 if (hasValue)
                 {
-                    threadPool.taskQueue.Enqueue(action);
-
-                    threadPool.threadEvent.Set();
+                    threadPool.AddToQueue(action);
                 }
                 else
                 {
@@ -284,10 +297,9 @@ namespace MyThreadPool
                 while (nextActions.Size != 0)
                 {
                     Action action = nextActions.Dequeue();
-                    threadPool.taskQueue.Enqueue(action);
-                }
-
-                threadPool.threadEvent.Set();
+                    //threadPool.taskQueue.Enqueue(action);
+                    threadPool.AddToQueue(action);
+                };
             }
         }
 
