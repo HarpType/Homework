@@ -7,6 +7,72 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
         
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="2">
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <TextBox x:Name="AddressBox" Text="Адрес сервера" TextAlignment="Left"/>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <TextBox x:Name="PortBox" Text="Номер порта"></TextBox>
+                    </Grid>
+                </Grid>
+
+                <Grid Grid.Column="1">
+                    <Button Name="connectButton" Content="Подключиться" Click="ConnectButton_Click"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="466*"/>
+                    <ColumnDefinition Width="63*"/>
+                </Grid.ColumnDefinitions>
+                <ListBox ItemsSource="{Binding Files}" Grid.ColumnSpan="2" Margin="0,0,-0.333,-0.333">
+
+                </ListBox>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="0">
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="Скачать файл" Grid.Column="0"></Button>
+                <Button Content="Скачать все файлы" Grid.Column="1"></Button>
+            </Grid>
+        </Grid>
+
+        <TextBox Text="Путь для скачивания файлов" Grid.Row="2" Grid.Column="1"></TextBox>
+
+        <ListBox Grid.Row="1" Grid.Column="1">
+
+        </ListBox>
+
     </Grid>
 </Window>

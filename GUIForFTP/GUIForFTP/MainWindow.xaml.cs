@@ -23,6 +23,19 @@ namespace GUIForFTP
         public MainWindow()
         {
             InitializeComponent();
+
+            var clientViewModel = new ClientViewModel();
+
+            this.DataContext = clientViewModel;
+        }
+
+        private async void ConnectButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            int.TryParse(PortBox.ToString(), out int intPort);
+            await (DataContext as ClientViewModel).ConnectToServer(AddressBox.ToString(), intPort);
+
+
         }
     }
 }
