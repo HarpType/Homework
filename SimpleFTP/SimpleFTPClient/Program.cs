@@ -10,16 +10,15 @@ namespace SimpleFTPClient
     {
         static void Main(string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length != 3)
             {
                 Console.WriteLine("Команда не задана либо задана неверно");
                 return;
             }
 
-            var data = Client.SendRequest(args[0], args[1]).GetAwaiter().GetResult();
+            var data = Client.SendRequest(args[0], args[1] + " " + args[2]).GetAwaiter().GetResult();
 
             Console.WriteLine(data);
-            Console.ReadKey();
         }
     }
 }

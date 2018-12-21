@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleFTPServer
@@ -10,7 +11,8 @@ namespace SimpleFTPServer
             //var task = new Task(Server.Start);
             //task.Wait();
 
-            Server.Start().GetAwaiter().GetResult();
+            var ct = new CancellationToken();
+            Server.Start(ct).GetAwaiter().GetResult();
         }
     }
 }

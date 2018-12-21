@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimpleFTPServer
@@ -9,14 +10,14 @@ namespace SimpleFTPServer
     /// <summary>
     /// Класс, реализующий поведение сервера.
     /// </summary>
-    class Server
+    public class Server
     {
         private const int port = 8238;
 
         /// <summary>
         /// Метод запускает сервер.
         /// </summary>
-        public static async Task Start()
+        public static async Task Start(CancellationToken ct)
         {
             var listener = new TcpListener(IPAddress.Any, port);
 
@@ -24,6 +25,9 @@ namespace SimpleFTPServer
 
             while (true)
             {
+                if (ct.IsCancellationRequested)
+                    return;
+
                 var socket = await listener.AcceptSocketAsync();
 
                 var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
@@ -42,21 +46,18 @@ namespace SimpleFTPServer
             var reader = new StreamReader(stream);
             var command = await reader.ReadLineAsync();
 
-            string receiveData = "";
+            string receiveData = "Command not found";
 
-            if (command[0] == '1')
+            if (command.Length > 3)
             {
-                int index = command.IndexOf(" ");
-                receiveData = await FileCommander.DoListCommand(command.Substring(index));
-            }
-            else if (command[0] == '2')
-            {
-                int index = command.IndexOf(" ");
-                receiveData = await FileCommander.DoGetCommand(command.Substring(index));
-            }
-            else
-            {
-                receiveData = "Команда не найдена";
+                if (command[0] == '1')
+                {
+                    receiveData = await FileCommander.DoListCommand(command.Substring(1));
+                }
+                else if (command[0] == '2')
+                {
+                    receiveData = await FileCommander.DoGetCommand(command.Substring(1));
+                }
             }
 
             var writer = new StreamWriter(stream);
