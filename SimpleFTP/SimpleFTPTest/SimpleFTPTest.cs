@@ -89,6 +89,7 @@ namespace SimpleFTPTest
 
             Server.Start(ct);
 
+            Thread.Sleep(200);
             var data = Client.SendRequest(serv, command).GetAwaiter().GetResult();
 
             Assert.AreEqual("-1", data);
