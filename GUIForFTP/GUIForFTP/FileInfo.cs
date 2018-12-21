@@ -14,8 +14,9 @@ namespace GUIForFTP
 
         public bool IsDirectory { get; set; }
 
-        public FileInfo(string name, bool isDirectory)
+        public FileInfo(string fullName, string name, bool isDirectory)
         {
+            FullName = fullName;
             Name = name;
             IsDirectory = isDirectory;
         }

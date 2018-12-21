@@ -31,10 +31,10 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0">
-                        <TextBox x:Name="AddressBox" Text="Адрес сервера" TextAlignment="Left"/>
+                        <TextBox x:Name="AddressBox" Text="127.0.0.1" TextAlignment="Left"/>
                     </Grid>
                     <Grid Grid.Row="1">
-                        <TextBox x:Name="PortBox" Text="Номер порта"></TextBox>
+                        <TextBox x:Name="PortBox" Text="8238"></TextBox>
                     </Grid>
                 </Grid>
 
@@ -50,11 +50,19 @@
                     <ColumnDefinition Width="466*"/>
                     <ColumnDefinition Width="63*"/>
                 </Grid.ColumnDefinitions>
-                <ListBox ItemsSource="{Binding Files}" Grid.ColumnSpan="2" Margin="0,0,-0.333,-0.333">
-
-                </ListBox>
             </Grid>
+
+            <ListView x:Name="FileList" ItemsSource="{Binding Files}" MouseDoubleClick="FilesMouseDoubleClick" Margin="5,5,5,5" Grid.Column="1" Grid.Row="0">
+                <ListView.View>
+                    <GridView x:Name="grdNames">
+                        <GridViewColumn Header="Name"  DisplayMemberBinding="{Binding Name}"/>
+                        <GridViewColumn Header="Directory"  DisplayMemberBinding="{Binding IsDirectory}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Grid>
+
+
 
         <Grid Grid.Row="0">
             <Grid Grid.Column="0">

@@ -27,13 +27,26 @@ namespace GUIForFTP
             var clientViewModel = new ClientViewModel();
 
             this.DataContext = clientViewModel;
+
+            //FileList.ItemsSource = clientViewModel.Files;
+
         }
 
         private async void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
 
-            int.TryParse(PortBox.ToString(), out int intPort);
-            await (DataContext as ClientViewModel).ConnectToServer(AddressBox.ToString(), intPort);
+            int.TryParse(PortBox.Text.ToString(), out int intPort);
+            await (DataContext as ClientViewModel).ConnectToServer(AddressBox.Text.ToString(), intPort);
+
+
+        }
+
+        private async void FilesMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (!((sender as ListBox).SelectedItem is FileInfo fileInfo))
+            {
+                return;
+            }
 
 
         }

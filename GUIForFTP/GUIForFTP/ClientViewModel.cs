@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -11,18 +12,20 @@ namespace GUIForFTP
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public List<FileInfo> Files = new List<FileInfo>();
+        public ObservableCollection<FileInfo> Files { get; set; } = new ObservableCollection<FileInfo>();
 
         public async Task ConnectToServer(string address, int port)
         {
-            string command = @"1 ...\";
+            string path = @"D:\Temp\";
+
+            string command = "1 " + path;
 
             string dirInfo = await Client.SendRequest(address, port, command);
 
-            ParseInfo(dirInfo);
+            ParseInfo(dirInfo, path);
         }
 
-        public void ParseInfo(string dirInfo)
+        public void ParseInfo(string dirInfo, string path)
         {
             string[] info = dirInfo.Split(' ');
 
@@ -30,14 +33,14 @@ namespace GUIForFTP
 
             for (int i = 1; i <= fileCount; ++i)
             {
-                string fileName = info[2 * i - 1];
+                string name = info[2 * i - 1];
                 if (info[2 * i] == "true")
                 {
-                    Files.Add(new FileInfo(fileName, true));
+                    Files.Add(new FileInfo(path + name, name, true));
                 }
                 else
                 {
-                    Files.Add(new FileInfo(fileName, false));
+                    Files.Add(new FileInfo(path + name, name, false));
                 }
                 
             }
