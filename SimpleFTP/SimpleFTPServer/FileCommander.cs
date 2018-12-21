@@ -16,7 +16,16 @@ namespace SimpleFTPServer
         {
             string dataString;
 
-            var dir = new DirectoryInfo(dirPath);
+            DirectoryInfo dir = null;
+
+            try
+            {
+                dir = new DirectoryInfo(dirPath);
+            }
+            catch (ArgumentException aex)
+            {
+                return "-1";
+            }
 
             if (!dir.Exists)
             {

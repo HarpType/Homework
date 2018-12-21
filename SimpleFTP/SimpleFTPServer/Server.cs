@@ -48,7 +48,7 @@ namespace SimpleFTPServer
 
             string receiveData = "Command not found";
 
-            if (command.Length > 3)
+            if (command.Length > 2)
             {
                 if (command[0] == '1')
                 {
