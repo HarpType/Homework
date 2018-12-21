@@ -10,22 +10,34 @@ namespace GUIForFTP
 {
     class ClientViewModel
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
+        /// <summary>
+        /// Коллекция файлов
+        /// </summary>
         public ObservableCollection<FileInfo> Files { get; set; } = new ObservableCollection<FileInfo>();
 
+        /// <summary>
+        /// Подключение к серверу.
+        /// </summary>
+        /// <param name="address">Адрес сервера.</param>
+        /// <param name="port">Номер порта.</param>
+        /// <returns></returns>
         public async Task ConnectToServer(string address, int port)
         {
-            string path = @"D:\Temp\";
+            string defaultPath = @".";
 
-            string command = "1 " + path;
+            string command = "1 " + defaultPath;
 
             string dirInfo = await Client.SendRequest(address, port, command);
 
-            ParseInfo(dirInfo, path);
+            ParseInfo(dirInfo, defaultPath);
         }
 
-        public void ParseInfo(string dirInfo, string path)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dirInfo"></param>
+        /// <param name="path"></param>
+        public void ParseInfo(string path)
         {
             string[] info = dirInfo.Split(' ');
 

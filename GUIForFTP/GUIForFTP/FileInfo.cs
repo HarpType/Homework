@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace GUIForFTP
 {
+    /// <summary>
+    /// Класс, содержащий свойства файлов.
+    /// </summary>
     public class FileInfo
     {
-        public string FullName { get; set; }
-
         public string Name { get; set; }
 
         public bool IsDirectory { get; set; }
 
-        public FileInfo(string fullName, string name, bool isDirectory)
+        public FileInfo(string name, bool isDirectory)
         {
-            FullName = fullName;
             Name = name;
             IsDirectory = isDirectory;
         }

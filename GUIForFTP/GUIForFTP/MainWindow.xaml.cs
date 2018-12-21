@@ -28,10 +28,11 @@ namespace GUIForFTP
 
             this.DataContext = clientViewModel;
 
-            //FileList.ItemsSource = clientViewModel.Files;
-
         }
 
+        /// <summary>
+        /// Обработчик кнопи ConnectButton. Подключается к серверу.
+        /// </summary>
         private async void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
 
@@ -43,12 +44,6 @@ namespace GUIForFTP
 
         private async void FilesMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (!((sender as ListBox).SelectedItem is FileInfo fileInfo))
-            {
-                return;
-            }
-
-
         }
     }
 }
