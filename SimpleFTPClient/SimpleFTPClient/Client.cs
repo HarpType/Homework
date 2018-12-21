@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace SimpleFTPClient
 {
@@ -9,61 +10,58 @@ namespace SimpleFTPClient
     /// </summary>
     class Client
     {
+        private const int port = 8238;
+
+
+        public static async Task<string> SendRequest(string command)
+        {
+            try
+            {
+                using (var client = new TcpClient("127.0.0.1", port))
+                {
+                    var stream = client.GetStream();
+                    var writer = new StreamWriter(stream);
+
+                    await writer.WriteLineAsync(command);
+                    await writer.FlushAsync();
+
+                    var reader = new StreamReader(stream);
+                    var data = await reader.ReadToEndAsync();
+
+                    return data;
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+        }
         /// <summary>
         /// Метод, отвечающий за связь клиента с сервером. Запрашивает адрес сервера и его порт
         /// Отправляет команды клиента на выполнение серверу.
         /// </summary>
-        public void Start()
-        {
-            while (true)
-            {
-                string server;
-                string port = "";
+        //public static async Task<string> SendRequest(string command)
+        //{
+        //    try
+        //    {
+        //        using (var client = new TcpClient("127.0.0.1", port)
+        //        {
+        //            var stream = client.GetStream();
+        //            var writer = new StreamWriter(stream);
 
-                Console.WriteLine("Введите адрес сервера");
-                server = Console.ReadLine();
+        //            writer.WriteLine(command);
+        //            writer.Flush();
 
-                while (true)
-                {
-                    Console.WriteLine("Введите порт");
-                    port = Console.ReadLine();
+        //            var reader = new StreamReader(stream);
+        //            var data = reader.ReadToEnd();
 
-                    if (!int.TryParse(port, out int p))
-                    {
-                        Console.WriteLine("Неверный формат");
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-
-                 string command;
-
-                Console.WriteLine("Введите команду");
-                command = Console.ReadLine();
-
-                try
-                {
-                    using (var client = new TcpClient(server, int.Parse(port)))
-                    {
-                        var stream = client.GetStream();
-                        var writer = new StreamWriter(stream);
-
-                        writer.WriteLine(command);
-                        writer.Flush();
-
-                        var reader = new StreamReader(stream);
-                        var data = reader.ReadToEnd();
-                        Console.WriteLine(data);
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Невозможно подключиться к серверу");
-                }
-            }
-        }
+        //            return data;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("Невозможно подключиться к серверу");
+        //    }
+        //}
     }
 }
