@@ -12,6 +12,7 @@ namespace MyNUnit
         {
             if (args.Length == 0)
             {
+                // аргумент 1
                 Console.WriteLine("Путь не задан");
                 return;
             }

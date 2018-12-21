@@ -6,10 +6,10 @@ namespace ClassLibrary2
 {
     public class Class1
     {
-        public int t = 0;
+        public static int t = 0;
 
         [BeforeClass]
-        public void BeforeClassMethod()
+        static public void BeforeClassMethod()
         {
             t = 10;
         }
@@ -24,7 +24,7 @@ namespace ClassLibrary2
         }
 
         [AfterClass]
-        public void AfterClassMethod()
+        static public void AfterClassMethod()
         {
             t = 0;
         }

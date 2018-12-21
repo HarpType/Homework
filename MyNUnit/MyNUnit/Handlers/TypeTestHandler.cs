@@ -22,7 +22,7 @@ namespace MyNUnit.Handlers
 
         private List<MethodTestHandler> testsMethods = new List<MethodTestHandler>();
 
-        private readonly object instance;
+        Type type;
 
         /// <summary>
         /// Конструктор класса. Создаёт объект типа и распределяет его методы 
@@ -31,27 +31,34 @@ namespace MyNUnit.Handlers
         /// <param name="type">Исходный тип.</param>
         public TypeTestHandler(Type type)
         {
-            instance = Activator.CreateInstance(type);
+            this.type = type;
 
             foreach (var method in type.GetMethods())
             {
                 foreach (var attr in method.GetCustomAttributes())
                 {
+                    
                     var attrType = attr.GetType();
 
                     if (attrType == typeof(Attributes.AfterClassAttribute))
                     {
-                        var testMethod = new MethodTestHandler(method);
-                        afterClassMethods.Add(testMethod);
+                        if (method.IsStatic)
+                        {
+                            var testMethod = new MethodTestHandler(method);
+                            afterClassMethods.Add(testMethod);
 
-                        break;
+                            break;
+                        }
                     }
                     else if (attrType == typeof(Attributes.BeforeClassAttribute))
                     {
-                        var testMethod = new MethodTestHandler(method);
-                        beforeClassMethods.Add(testMethod);
+                        if (method.IsStatic)
+                        {
+                            var testMethod = new MethodTestHandler(method);
+                            beforeClassMethods.Add(testMethod);
 
-                        break;
+                            break;
+                        }
                     }
                     else if (attrType == typeof(Attributes.AfterAttribute))
                     {
@@ -84,30 +91,42 @@ namespace MyNUnit.Handlers
         /// </summary>
         public List<TestInfo> RunTests()
         {
-            var testsInfo = new List<TestInfo>();
+            List<TestInfo> beforeClassInfo = RunBeforeClassInTasks(beforeClassMethods);
+            bool beforeClassFailed = beforeClassInfo.Exists(IsNotSuccessfull);
 
-            testsInfo.AddRange(RunInTasks(beforeClassMethods));
+            List<TestInfo> mainInfo = RunTests(beforeMethods, afterMethods, testsMethods, beforeClassFailed);
+            bool mainFailed = mainInfo.Exists(IsNotSuccessfull);
 
-            testsInfo.AddRange(RunWithInTasks(beforeMethods, afterMethods, testsMethods));
+            List<TestInfo> afterClassInfo = RunAfterClassInTasks(afterClassMethods, mainFailed);
 
-            testsInfo.AddRange(RunInTasks(afterClassMethods));
+            List<TestInfo> testsInfo = beforeClassInfo;
+            testsInfo.AddRange(mainInfo);
+            testsInfo.AddRange(afterClassInfo);
 
             return testsInfo;
         }
 
         /// <summary>
-        /// Независимо запускает заданный лист методов.
+        /// Предикат для поиска неуспешно выполненных тестов.
         /// </summary>
-        /// <param name="methods">Набор методов, которые необходимо протестировать.</param>
+        /// <param name="testInfo">Информация о тесте.</param>
+        /// <returns>True, если тест выполнен успешно, false в противном случае.</returns>
+        private bool IsNotSuccessfull(TestInfo testInfo) => !testInfo.Successfull ? true : false;
+
+        /// <summary>
+        /// Независимо запускает тестирование для заданного листа статических методов 
+        /// с атрибутом BeforeClass.
+        /// </summary>
+        /// <param name="methods">Набор статических методов, которые необходимо протестировать.</param>
         /// <returns>Информация о выполненных тестах.</returns>        
-        private List<TestInfo> RunInTasks(List<MethodTestHandler> methods)
+        private List<TestInfo> RunBeforeClassInTasks(List<MethodTestHandler> methods)
         {
             Task[] tasks = new Task[methods.Count];
 
             for (int i = 0; i < methods.Count; ++i)
             {
                 int j = i;
-                tasks[i] = new Task<TestInfo>(methods[j].Run, instance);
+                tasks[i] = new Task<TestInfo>(() => methods[j].RunStatic(type, false));
                 tasks[i].Start();
             }
 
@@ -121,31 +140,64 @@ namespace MyNUnit.Handlers
         }
 
         /// <summary>
-        /// Для каждого теста запускает набор тестов, которые необходимо 
-        /// выполнять до и после.
+        /// Независимо запускает тестирование для заданного листа статических методов
+        /// с атрибутом AfterClass.
+        /// </summary>
+        /// <param name="methods">Искомые методы.</param>
+        /// <param name="beforeFailed">Информация о успешности предыдущих тестов.</param>
+        /// <returns>Информация о тестах.</returns>
+        private List<TestInfo> RunAfterClassInTasks(List<MethodTestHandler> methods, bool beforeFailed)
+        {
+            Task[] tasks = new Task[methods.Count];
+
+            for (int i = 0; i < methods.Count; ++i)
+            {
+                int j = i;
+                tasks[i] = new Task<TestInfo>(() => methods[j].RunStatic(type, beforeFailed));
+                tasks[i].Start();
+            }
+
+            var testsInfo = new List<TestInfo>();
+            foreach (Task<TestInfo> task in tasks)
+            {
+                testsInfo.Add(task.Result);
+            }
+
+            return testsInfo;
+        }
+
+        /// <summary>
+        /// Для каждого основного теста test запускает before и after тесты и его самого.
         /// </summary>
         /// <param name="beforeMethods">Тесты, которые необходимо выполнять перед каждым основным тестом.</param>
         /// <param name="afterMethods">Тесты, которые необходимо выполнять после каждого основного теста</param>
         /// <param name="testMethods">Набор основных тестов.</param>
+        /// <param name="beforeClassFailed">Информация о успешности выполнения предыдущих тестов.</param>
         /// <returns>Информация о выполненных тестах.</returns>
-        private List<TestInfo> RunWithInTasks(List<MethodTestHandler> beforeMethods,
+        private List<TestInfo> RunTests(List<MethodTestHandler> beforeMethods,
             List<MethodTestHandler> afterMethods,
-            List<MethodTestHandler> testMethods)
+            List<MethodTestHandler> testMethods,
+            bool beforeClassFailed)
         {
             Task[] testTasks = new Task[testMethods.Count];
 
             for (int i = 0; i < testMethods.Count; ++i)
             {
+                var localInstance = Activator.CreateInstance(type);
                 int j = i;
                 testTasks[i] = new Task<List<TestInfo>>(() =>
                 {
-                    var localTestsInfo = new List<TestInfo>();
+                    List<TestInfo> beforeInfo = RunBeforeAfter(beforeMethods, localInstance, beforeClassFailed);
+                    bool beforeFailed = beforeInfo.Exists(IsNotSuccessfull);
 
-                    localTestsInfo.AddRange(RunInTasks(beforeMethods));
+                    TestInfo mainInfo = testMethods[j].Run(localInstance, beforeFailed);
+                    bool mainFailed = IsNotSuccessfull(mainInfo);
 
-                    localTestsInfo.Add(testMethods[j].Run(instance));
+                    List<TestInfo> afterInfo = RunBeforeAfter(afterMethods, localInstance, mainFailed);
 
-                    localTestsInfo.AddRange(RunInTasks(afterMethods));
+                    var localTestsInfo = beforeInfo;
+                    localTestsInfo.Add(mainInfo);
+                    localTestsInfo.AddRange(afterInfo);
 
                     return localTestsInfo;
                 });
@@ -160,6 +212,28 @@ namespace MyNUnit.Handlers
             }
 
             return globalTestsInfo;
+        }
+
+        /// <summary>
+        /// Запускает заданный набор методов друг за другом.
+        /// </summary>
+        /// <param name="methods">Исходные методы, которые необходимо протестировать.</param>
+        /// <param name="instance">Объект типа, в котором находится тест.</param>
+        /// <param name="beforeClassFailed">Основные тесты считаются неуспешными, если 
+        /// beforeClass тесты неуспешны.</param>
+        /// <returns>Информация о тестах.</returns>
+        private List<TestInfo> RunBeforeAfter(List<MethodTestHandler> methods, 
+            object instance, 
+            bool beforeFailed)
+        {
+            var testsInfo = new List<TestInfo>();
+
+            foreach (var method in methods)
+            {
+                testsInfo.Add(method.Run(instance, beforeFailed));
+            }
+
+            return testsInfo;
         }
     }
 }

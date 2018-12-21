@@ -27,7 +27,7 @@ namespace MyNUnit
                 throw new DirectoryNotFoundException("Каталог не найден");
             }
 
-            FileInfo[] assmFiles= GetAssemblyFiles(dir);
+            FileInfo[] assmFiles = GetAssemblyFiles(dir);
 
             List<TestInfo> testsInfo = RunAssembly(assmFiles);
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace MyNUnit.Handlers
@@ -28,16 +29,71 @@ namespace MyNUnit.Handlers
         }
 
         /// <summary>
+        /// Запускает тестирование статического метода.
+        /// </summary>
+        /// <param name="type">Тип, которому принадлжит метод.</param>
+        /// <param name="beforeFailed">Инфомрация о ходе выполнения предыдущего теста.
+        /// Если true, то текущий тест должен быть неуспешным, если false, то
+        /// запускает тестирование.</param>
+        /// <returns>Информация о тесте.</returns>
+        public TestInfo RunStatic(Type type, bool beforeFailed)
+        {
+            var testInfo = new TestInfo();
+
+            testInfo.Name = Info.Name;
+            testInfo.TypeName = type.GetType().FullName;
+
+            if (beforeFailed)
+            {
+                testInfo.Successfull = false;
+
+                return testInfo;
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                Info.Invoke(null, null);
+
+                testInfo.Successfull = true;
+            }
+            catch (TargetInvocationException ex)
+            {
+                stopwatch.Stop();
+
+                var item = ex.InnerException;
+
+                testInfo.Successfull = false;
+                testInfo.Result = item.GetType();
+            }
+            finally
+            {
+                stopwatch.Stop();
+                testInfo.Milliseconds = stopwatch.ElapsedMilliseconds;
+            }
+
+            return testInfo;
+        }
+
+        /// <summary>
         /// Запускает тестирование метода.
         /// </summary>
         /// <param name="instance">Объект, которому принадлежит метод.</param>
         /// <returns>Информация о тесте.</returns>
-        public TestInfo Run(object instance)
+        public TestInfo Run(object instance, bool beforeFailed)
         {
             var testInfo = new TestInfo();
 
             testInfo.Name = Info.Name;
             testInfo.TypeName = instance.GetType().FullName;
+
+            if (beforeFailed)
+            {
+                testInfo.Successfull = false;
+
+                return testInfo;
+            }
+
 
             if (TestAttribute != null)
             {

@@ -5,10 +5,10 @@ namespace ClassLibrary3
 {
     public class Class1
     {
-        int t = 0;
+        public static int t = 0;
 
         [BeforeClass]
-        public void BeforeClassMethod()
+        static public void BeforeClassMethod()
         {
             t = 10;
         }
@@ -21,7 +21,7 @@ namespace ClassLibrary3
         }
 
         [AfterClass]
-        public void AfterClassMethod()
+        static public void AfterClassMethod()
         {
             t = 0;
         }

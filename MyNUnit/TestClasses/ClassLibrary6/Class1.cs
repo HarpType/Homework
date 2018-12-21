@@ -27,7 +27,7 @@ namespace ClassLibrary6
 
     public class Class2
     {
-        private bool flag = false;
+        private static bool flag = false;
 
         [Test]
         public void ChangeFlag()
@@ -36,7 +36,7 @@ namespace ClassLibrary6
         }
 
         [AfterClass]
-        public void CheckFlag()
+        static public void CheckFlag()
         {
             if (!flag)
                 throw new Exception();
