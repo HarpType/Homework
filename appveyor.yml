@@ -47,9 +47,7 @@ for:
 
   environment:
     matrix:
-     - solution_name: SimpleFTPServer/SimpleFTPServer.sln    
-     - solution_name: SimpleFTPClient/SimpleFTPClient.sln
+     - solution_name: SimpleFTP/SimpleFTP.sln    
   
   build_script:
-    - msbuild SimpleFTPServer/SimpleFTPServer.sln    
-    - msbuild SimpleFTPClient/SimpleFTPClient.sln
+    - msbuild SimpleFTP/SimpleFTP.sln
