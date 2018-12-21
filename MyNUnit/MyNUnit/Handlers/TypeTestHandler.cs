@@ -95,9 +95,8 @@ namespace MyNUnit.Handlers
             bool beforeClassFailed = beforeClassInfo.Exists(IsNotSuccessfull);
 
             List<TestInfo> mainInfo = RunTests(beforeMethods, afterMethods, testsMethods, beforeClassFailed);
-            bool mainFailed = mainInfo.Exists(IsNotSuccessfull);
 
-            List<TestInfo> afterClassInfo = RunAfterClassInTasks(afterClassMethods, mainFailed);
+            List<TestInfo> afterClassInfo = RunAfterClassInTasks(afterClassMethods);
 
             List<TestInfo> testsInfo = beforeClassInfo;
             testsInfo.AddRange(mainInfo);
@@ -111,7 +110,7 @@ namespace MyNUnit.Handlers
         /// </summary>
         /// <param name="testInfo">Информация о тесте.</param>
         /// <returns>True, если тест выполнен успешно, false в противном случае.</returns>
-        private bool IsNotSuccessfull(TestInfo testInfo) => !testInfo.Successfull ? true : false;
+        private bool IsNotSuccessfull(TestInfo testInfo) => !testInfo.Successfull;
 
         /// <summary>
         /// Независимо запускает тестирование для заданного листа статических методов 
@@ -146,14 +145,14 @@ namespace MyNUnit.Handlers
         /// <param name="methods">Искомые методы.</param>
         /// <param name="beforeFailed">Информация о успешности предыдущих тестов.</param>
         /// <returns>Информация о тестах.</returns>
-        private List<TestInfo> RunAfterClassInTasks(List<MethodTestHandler> methods, bool beforeFailed)
+        private List<TestInfo> RunAfterClassInTasks(List<MethodTestHandler> methods)
         {
             Task[] tasks = new Task[methods.Count];
 
             for (int i = 0; i < methods.Count; ++i)
             {
                 int j = i;
-                tasks[i] = new Task<TestInfo>(() => methods[j].RunStatic(type, beforeFailed));
+                tasks[i] = new Task<TestInfo>(() => methods[j].RunStatic(type, false));
                 tasks[i].Start();
             }
 
