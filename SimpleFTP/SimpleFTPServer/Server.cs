@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SimpleFTPServer
 {
@@ -14,25 +15,70 @@ namespace SimpleFTPServer
     {
         private const int port = 8238;
 
-        /// <summary>
-        /// Метод запускает сервер.
-        /// </summary>
-        public static async Task Start(CancellationToken ct)
-        {
-            var listener = new TcpListener(IPAddress.Any, port);
+        Queue<Socket> socketQueue = new Queue<Socket>();
 
+        TcpListener listener = new TcpListener(IPAddress.Any, port);
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+        CancellationToken ct;
+
+        AutoResetEvent closeEvent = new AutoResetEvent(false);
+        AutoResetEvent socketEvent = new AutoResetEvent(false);
+
+        public Server()
+        {
+            ct = cts.Token;
+        }
+
+        /// <summary>
+        /// Передаёт основную работу сервера таску.
+        /// </summary>
+        public void Start()
+        {
+            Task.Run(StartProcess);
+         
+        }
+
+        /// <summary>
+        /// Запускает сервер.
+        /// </summary>
+        /// <returns></returns>
+        private async Task StartProcess()
+        {
+            StartListening();
+
+            while (true)
+            {
+                socketEvent.WaitOne();
+
+                if (ct.IsCancellationRequested)
+                {
+                    closeEvent.Set();
+                    return;
+                }
+
+                foreach (var socket in socketQueue)
+                {
+                    var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
+                    newTask.Start();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Запускает работу listener в отедльном потоке.
+        /// </summary>
+        private async void StartListening()
+        {
             listener.Start();
 
             while (true)
             {
-                if (ct.IsCancellationRequested)
-                    return;
-
                 var socket = await listener.AcceptSocketAsync();
 
-                var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
+                socketQueue.Enqueue(socket);
 
-                newTask.Start();
+                socketEvent.Set();
             }
         }
 
@@ -40,7 +86,7 @@ namespace SimpleFTPServer
         /// Обработчик запроса на сервер.
         /// </summary>
         /// <param name="socket">socket, созданный для общения с клиентом.</param>
-        static async private void ProcessNewRequest(Socket socket)
+        private async void ProcessNewRequest(Socket socket)
         {
             var stream = new NetworkStream(socket);
             var reader = new StreamReader(stream);
@@ -64,6 +110,19 @@ namespace SimpleFTPServer
             await writer.WriteAsync(receiveData);
             await writer.FlushAsync();
             socket.Close();
+        }
+
+        /// <summary>
+        /// Завершает исполнение сервера.
+        /// </summary>
+        public void Shutdown()
+        {
+            cts.Cancel();
+            cts.Dispose();
+
+            socketEvent.Set();
+
+            closeEvent.WaitOne();
         }
     }
 }

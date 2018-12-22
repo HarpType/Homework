@@ -22,7 +22,7 @@ namespace SimpleFTPServer
             {
                 dir = new DirectoryInfo(dirPath);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException)
             {
                 return "-1";
             }

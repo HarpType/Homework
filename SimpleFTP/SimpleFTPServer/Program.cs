@@ -11,8 +11,8 @@ namespace SimpleFTPServer
             //var task = new Task(Server.Start);
             //task.Wait();
 
-            var ct = new CancellationToken();
-            Server.Start(ct).GetAwaiter().GetResult();
+            var server = new Server();
+            server.Start();
         }
     }
 }
