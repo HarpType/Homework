@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace SimpleFTPServer
 {
@@ -15,15 +15,17 @@ namespace SimpleFTPServer
     {
         private const int port = 8238;
 
-        Queue<Socket> socketQueue = new Queue<Socket>();
+        ConcurrentBag<Socket> sockets = new ConcurrentBag<Socket>();
 
         TcpListener listener = new TcpListener(IPAddress.Any, port);
 
         CancellationTokenSource cts = new CancellationTokenSource();
         CancellationToken ct;
 
-        AutoResetEvent closeEvent = new AutoResetEvent(false);
+        AutoResetEvent mainCloseEvent = new AutoResetEvent(false);
+        AutoResetEvent listenerCloseEvent = new AutoResetEvent(false);
         AutoResetEvent socketEvent = new AutoResetEvent(false);
+        AutoResetEvent startEvent = new AutoResetEvent(false);
 
         public Server()
         {
@@ -36,7 +38,8 @@ namespace SimpleFTPServer
         public void Start()
         {
             Task.Run(StartProcess);
-         
+
+            startEvent.WaitOne();
         }
 
         /// <summary>
@@ -53,11 +56,11 @@ namespace SimpleFTPServer
 
                 if (ct.IsCancellationRequested)
                 {
-                    closeEvent.Set();
+                    mainCloseEvent.Set();
                     return;
                 }
 
-                foreach (var socket in socketQueue)
+                foreach (var socket in sockets)
                 {
                     var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
                     newTask.Start();
@@ -66,17 +69,25 @@ namespace SimpleFTPServer
         }
 
         /// <summary>
-        /// Запускает работу listener в отедльном потоке.
+        /// Запускает работу listener в отдельном потоке.
         /// </summary>
         private async void StartListening()
         {
             listener.Start();
 
+            startEvent.Set();
+
             while (true)
             {
                 var socket = await listener.AcceptSocketAsync();
 
-                socketQueue.Enqueue(socket);
+                if (ct.IsCancellationRequested)
+                {
+                    listenerCloseEvent.Set();
+                    return;
+                }
+
+                sockets.Add(socket);
 
                 socketEvent.Set();
             }
@@ -122,7 +133,9 @@ namespace SimpleFTPServer
 
             socketEvent.Set();
 
-            closeEvent.WaitOne();
+            listener.Stop();
+
+            mainCloseEvent.WaitOne();
         }
     }
 }
