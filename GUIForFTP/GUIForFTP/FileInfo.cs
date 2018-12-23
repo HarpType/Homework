@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace GUIForFTP
 {
+    public enum FileItemType
+    {
+        File,
+        Directory,
+        Upper
+    }
+
+
     /// <summary>
     /// Класс, содержащий свойства файлов.
     /// </summary>
@@ -13,12 +21,12 @@ namespace GUIForFTP
     {
         public string Name { get; set; }
 
-        public bool IsDirectory { get; set; }
+        public FileItemType itemType { get; set; }
 
-        public FileInfo(string name, bool isDirectory)
+        public FileInfo(string name, FileItemType itemType)
         {
             Name = name;
-            IsDirectory = isDirectory;
+            this.itemType = itemType;
         }
     }
 }

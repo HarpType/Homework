@@ -10,6 +10,8 @@ namespace GUIForFTP
 {
     class ClientViewModel
     {
+        Client client = new Client();
+
         /// <summary>
         /// Коллекция файлов
         /// </summary>
@@ -23,38 +25,17 @@ namespace GUIForFTP
         /// <returns></returns>
         public async Task ConnectToServer(string address, int port)
         {
-            string defaultPath = @".";
+            string defaultPath = @"D:\";
 
             string command = "1 " + defaultPath;
 
-            string dirInfo = await Client.SendRequest(address, port, command);
+            List<FileInfo> dirInfo = await client.DoListCommand(defaultPath);
 
-            ParseInfo(dirInfo, defaultPath);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="dirInfo"></param>
-        /// <param name="path"></param>
-        public void ParseInfo(string path)
-        {
-            string[] info = dirInfo.Split(' ');
-
-            int.TryParse(info[0], out int fileCount);
-
-            for (int i = 1; i <= fileCount; ++i)
+            Files.Clear();
+            Files.Add(new FileInfo("...", FileItemType.Upper));
+            foreach (var item in dirInfo)
             {
-                string name = info[2 * i - 1];
-                if (info[2 * i] == "true")
-                {
-                    Files.Add(new FileInfo(path + name, name, true));
-                }
-                else
-                {
-                    Files.Add(new FileInfo(path + name, name, false));
-                }
-                
+                Files.Add(item);
             }
         }
     }

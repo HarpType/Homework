@@ -56,7 +56,7 @@
                 <ListView.View>
                     <GridView x:Name="grdNames">
                         <GridViewColumn Header="Name"  DisplayMemberBinding="{Binding Name}"/>
-                        <GridViewColumn Header="Directory"  DisplayMemberBinding="{Binding IsDirectory}"/>
+                        <GridViewColumn Header="Type"  DisplayMemberBinding="{Binding FileItemType}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
