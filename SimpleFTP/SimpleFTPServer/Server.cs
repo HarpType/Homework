@@ -60,8 +60,9 @@ namespace SimpleFTPServer
                     return;
                 }
 
-                foreach (var socket in sockets)
+                for (int i = 0; i < sockets.Count; i++)
                 {
+                    sockets.TryTake(out Socket socket);
                     var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
                     newTask.Start();
                 }

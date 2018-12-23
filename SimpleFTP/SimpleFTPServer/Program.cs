@@ -13,6 +13,10 @@ namespace SimpleFTPServer
 
             var server = new Server();
             server.Start();
+
+            Console.ReadKey();
+
+            server.Shutdown();
         }
     }
 }
