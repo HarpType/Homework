@@ -12,7 +12,7 @@ namespace SimpleFTPServer
         /// </summary>
         /// <param name="path">Путь к директории.</param>
         /// <returns>Ответ в указанном формате.</returns>
-        public static async Task<string> DoListCommand(string dirPath)
+        public static string DoListCommand(string dirPath)
         {
             string dataString;
 
@@ -58,7 +58,7 @@ namespace SimpleFTPServer
         /// </summary>
         /// <param name="filePath">Путь к файлу.</param>
         /// <returns>Ответ в указанном формате.</returns>
-        public static async Task<string> DoGetCommand(string filePath)
+        public static string DoGetCommand(string filePath)
         {
             string dataString;
 

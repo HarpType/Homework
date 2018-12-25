@@ -98,11 +98,11 @@ namespace SimpleFTPServer
         /// Обработчик запроса на сервер.
         /// </summary>
         /// <param name="socket">socket, созданный для общения с клиентом.</param>
-        private async void ProcessNewRequest(Socket socket)
+        private void ProcessNewRequest(Socket socket)
         {
             var stream = new NetworkStream(socket);
             var reader = new StreamReader(stream);
-            var command = await reader.ReadLineAsync();
+            var command = reader.ReadLine();
 
             string receiveData = "Command not found";
 
@@ -110,17 +110,17 @@ namespace SimpleFTPServer
             {
                 if (command[0] == '1')
                 {
-                    receiveData = await FileCommander.DoListCommand(command.Substring(1));
+                    receiveData = FileCommander.DoListCommand(command.Substring(1));
                 }
                 else if (command[0] == '2')
                 {
-                    receiveData = await FileCommander.DoGetCommand(command.Substring(1));
+                    receiveData = FileCommander.DoGetCommand(command.Substring(1));
                 }
             }
 
             var writer = new StreamWriter(stream);
-            await writer.WriteAsync(receiveData);
-            await writer.FlushAsync();
+            writer.Write(receiveData);
+            writer.Flush();
             socket.Close();
         }
 

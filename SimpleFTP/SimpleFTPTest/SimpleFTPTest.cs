@@ -20,7 +20,7 @@ namespace SimpleFTPTest
 
             string expectedData = "3 TestDirectory true TestFile1.txt false TestFile2.txt false ";
 
-            string data = FileCommander.DoListCommand(path).GetAwaiter().GetResult();
+            string data = FileCommander.DoListCommand(path);
 
             Assert.AreEqual(expectedData, data);
         }
@@ -31,7 +31,7 @@ namespace SimpleFTPTest
             string filePath = RootPath + "/TestDirectories/Directory2/Hello.txt";
             string expectedData = "29 A Hello World! program in C#.";
 
-            string data = FileCommander.DoGetCommand(filePath).GetAwaiter().GetResult();
+            string data = FileCommander.DoGetCommand(filePath);
 
             Assert.AreEqual(expectedData, data);
         }
