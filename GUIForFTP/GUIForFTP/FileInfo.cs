@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,13 +20,50 @@ namespace GUIForFTP
     /// </summary>
     public class FileInfo
     {
-        public string Name { get; set; }
+        /// <summary>
+        /// Полное имя файла или директории (начинается с корня сервера).
+        /// </summary>
+        public string FullName { get; }
 
-        public FileItemType itemType { get; set; }
+        /// <summary>
+        /// Возвращает название файла или папки в том виде, в котором он будет
+        /// отображаться в приложении.
+        /// </summary>
+        public string Name {
+            get
+            {
+                if (itemType == FileItemType.Directory)
+                    return Path.GetFileName(Path.GetDirectoryName(FullName));
+                else if (itemType == FileItemType.File)
+                    return Path.GetFileName(FullName);
+                else
+                    return "...";
+            }}
 
-        public FileInfo(string name, FileItemType itemType)
+        /// <summary>
+        /// Тип элемента.
+        /// </summary>
+        public FileItemType itemType { get; }
+
+        /// <summary>
+        /// Возвращает название типа элемента.
+        /// </summary>
+        public string TypeName
         {
-            Name = name;
+            get
+            {
+                if (itemType == FileItemType.Directory)
+                    return "Directory";
+                else if (itemType == FileItemType.File)
+                    return "File";
+                else
+                    return "";
+            }
+        }
+
+        public FileInfo(string fullName, FileItemType itemType)
+        {
+            FullName = fullName;
             this.itemType = itemType;
         }
     }

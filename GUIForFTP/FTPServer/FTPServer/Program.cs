@@ -15,6 +15,8 @@ namespace FTPServer
             server.Start();
 
             Console.ReadKey();
+
+            server.Shutdown();
         }
     }
 }

@@ -34,6 +34,10 @@ namespace FTPServer
             ct = cts.Token;
         }
 
+        private readonly string RootDownloadPath =
+            new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName +
+            @"\DownloadRoot\";
+
         /// <summary>
         /// Передаёт основную работу сервера таску.
         /// </summary>
@@ -62,10 +66,13 @@ namespace FTPServer
                     return;
                 }
 
-                foreach (var socket in sockets)
+                for (int i = 0; i < sockets.Count; i++)
                 {
-                    var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
-                    newTask.Start();
+                    if (sockets.TryTake(out Socket socket))
+                    {
+                        var newTask = new Task(requestSocket => ProcessNewRequest((Socket)requestSocket), socket);
+                        newTask.Start();
+                    }
                 }
             }
         }
@@ -106,15 +113,15 @@ namespace FTPServer
             var command = await reader.ReadLineAsync();
 
             var writer = new StreamWriter(stream) { AutoFlush = true };
-            if (command.Length > 2)
+            if (command.Length >= 2)
             {
                 if (command[0] == '1')
                 {
-                    DoListCommand(command.Substring(1), writer);
+                    DoListCommand(command.Substring(2), writer);
                 }
                 else if (command[0] == '2')
                 {
-                    DoGetCommand(command.Substring(1), writer);
+                    DoGetCommand(command.Substring(2), writer);
                 }
             }
             else
@@ -127,11 +134,13 @@ namespace FTPServer
 
         private void DoListCommand(string dirPath, StreamWriter writer)
         {
+            string fullPath = RootDownloadPath + dirPath;
+
             DirectoryInfo dir = null;
 
             try
             {
-                dir = new DirectoryInfo(dirPath);
+                dir = new DirectoryInfo(fullPath);
             }
             catch (ArgumentException)
             {
@@ -148,23 +157,27 @@ namespace FTPServer
             int dirFilesCount = 0;
 
             List<string> dirFileStrings = new List<string>();
+            List<bool> isDirectory = new List<bool>();
             foreach (var item in dir.GetDirectories())
             {
                 dirFilesCount++;
-                dirFileStrings.Add(item.Name + " true");
+                dirFileStrings.Add(item.Name);
+                isDirectory.Add(true);
             }
 
             foreach (var item in dir.GetFiles())
             {
                 dirFilesCount++;
-                dirFileStrings.Add(item.Name + " false");
+                dirFileStrings.Add(item.Name);
+                isDirectory.Add(false);
             }
 
 
             writer.WriteLine(dirFilesCount);
-            foreach (var item in dirFileStrings)
+            for (int i = 0; i < dirFileStrings.Count; i++)
             {
-                writer.WriteLine(item);
+                writer.WriteLine(dirFileStrings[i]);
+                writer.WriteLine(isDirectory[i].ToString());
             }
         }
 

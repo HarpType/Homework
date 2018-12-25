@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace GUIForFTP
 {
@@ -38,12 +29,29 @@ namespace GUIForFTP
 
             int.TryParse(PortBox.Text.ToString(), out int intPort);
             await (DataContext as ClientViewModel).ConnectToServer(AddressBox.Text.ToString(), intPort);
-
-
         }
 
+
+        /// <summary>
+        /// Обрабатывает двойной клик мыши по файлу, директории или апперу.
+        /// Скачивает файл или запрашивает путь к директории у сервера.
+        /// </summary>
         private async void FilesMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            var fileInfo = ((sender as ListView).SelectedItem) as FileInfo;
+
+            if (fileInfo.itemType == FileItemType.Upper)
+            {
+                await (DataContext as ClientViewModel).GetDirectory(fileInfo.FullName);
+            }
+            else if (fileInfo.itemType == FileItemType.Directory)
+            {
+                await (DataContext as ClientViewModel).GetDirectory(fileInfo.FullName);
+            }
+            else if (fileInfo.itemType == FileItemType.File)
+            {
+
+            }
         }
     }
 }

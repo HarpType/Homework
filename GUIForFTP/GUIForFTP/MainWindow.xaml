@@ -54,9 +54,9 @@
 
             <ListView x:Name="FileList" ItemsSource="{Binding Files}" MouseDoubleClick="FilesMouseDoubleClick" Margin="5,5,5,5" Grid.Column="1" Grid.Row="0">
                 <ListView.View>
-                    <GridView x:Name="grdNames">
-                        <GridViewColumn Header="Name"  DisplayMemberBinding="{Binding Name}"/>
-                        <GridViewColumn Header="Type"  DisplayMemberBinding="{Binding FileItemType}"/>
+                    <GridView>
+                        <GridViewColumn Header="Название"  DisplayMemberBinding="{Binding Name}"/>
+                        <GridViewColumn Header="Тип"  DisplayMemberBinding="{Binding TypeName}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
@@ -76,7 +76,7 @@
             </Grid>
         </Grid>
 
-        <TextBox Text="Путь для скачивания файлов" Grid.Row="2" Grid.Column="1"></TextBox>
+        <TextBox x:Name="downloadTextBox" Text="Путь для скачивания файлов" Grid.Row="2" Grid.Column="1"></TextBox>
 
         <ListBox Grid.Row="1" Grid.Column="1">
 

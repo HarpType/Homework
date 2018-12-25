@@ -13,82 +13,63 @@ namespace GUIForFTP
     /// </summary>
     public class Client
     {
-
-        //public static async Task<string> SendRequest(string server, int port, string command)
-        //{
-        //    string data = "";
-        //    try
-        //    {
-        //        using (var client = new TcpClient(server, port))
-        //        {
-        //            var stream = client.GetStream();
-        //            var writer = new StreamWriter(stream);
-
-        //            await writer.WriteLineAsync(command);
-        //            await writer.FlushAsync();
-
-        //            var reader = new StreamReader(stream);
-        //            data = await reader.ReadToEndAsync();
-        //        }
-        //    }
-        //    catch (SocketException)
-        //    {
-        //        throw new Exception("Ошибка подключения к серверу");
-        //    }
-
-        //    return data;
-        //}
-
         private string server = "127.0.0.1";
         private int port = 8238;
 
         public async Task<List<FileInfo>> DoListCommand(string dirPath)
         {
             string command = "1 " + dirPath;
-
-            using (var client = new TcpClient(server, port))
+            try
             {
-                var stream = client.GetStream();
-                var writer = new StreamWriter(stream) { AutoFlush = true };
-
-                await writer.WriteLineAsync(command);
-
-                var reader = new StreamReader(stream);
-                string size = await reader.ReadLineAsync();
-
-                if (size == "-1")
+                using (var client = new TcpClient(server, port))
                 {
-                    // TODO: EXIT
-                }
+                    var stream = client.GetStream();
+                    var writer = new StreamWriter(stream) { AutoFlush = true };
 
-                int dirFileCount = 0;
-                try
-                {
-                    dirFileCount = int.Parse(size);
-                }
-                catch (FormatException)
-                {
-                    //TODO: EXIT
-                }
+                    await writer.WriteLineAsync(command);
 
-                List<FileInfo> filesInfo = new List<FileInfo>();
-                for (int i = 0; i < dirFileCount; i++)
-                {
-                    string fileItem = reader.ReadLine();
+                    var reader = new StreamReader(stream);
+                    string size = await reader.ReadLineAsync();
 
-                    string[] items = fileItem.Split();
-                    FileItemType itemType = FileItemType.Directory;
-                    if (items[1] == "false")
+                    if (size == "-1")
                     {
-                        itemType = FileItemType.File;
+                        // TODO: EXIT
                     }
 
-                    var fileInfo = new FileInfo(items[0], itemType);
+                    int dirFileCount = 0;
+                    try
+                    {
+                        dirFileCount = int.Parse(size);
+                    }
+                    catch (FormatException)
+                    {
+                        //TODO: EXIT
+                    }
 
-                    filesInfo.Add(fileInfo);
+                    List<FileInfo> filesInfo = new List<FileInfo>();
+                    for (int i = 0; i < dirFileCount; i++)
+                    {
+                        string fileDirName = dirPath + reader.ReadLine();
+                        string isDirectory = reader.ReadLine();
+
+                        FileItemType itemType = FileItemType.File;
+                        if (isDirectory == "True")
+                        {
+                            fileDirName += @"\";
+                            itemType = FileItemType.Directory;
+                        }
+
+                        var fileInfo = new FileInfo(fileDirName, itemType);
+
+                        filesInfo.Add(fileInfo);
+                    }
+
+                    return filesInfo;
                 }
-
-                return filesInfo;
+            }
+            catch
+            {
+                return new List<FileInfo>();
             }
         }
     }
