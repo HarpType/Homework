@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -50,6 +51,14 @@ namespace GUIForFTP
             {
                 await (DataContext as ClientViewModel).DownloadFile(fileInfo, downloadTextBox.Text.ToString());
             }
+        }
+
+        /// <summary>
+        /// Скачивает все файлы в текущей директории.
+        /// </summary>
+        private void DownloadAllButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

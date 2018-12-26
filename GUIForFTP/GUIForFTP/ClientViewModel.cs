@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace GUIForFTP
 {
@@ -86,6 +87,69 @@ namespace GUIForFTP
                 FilesToDownload.Remove(downFile);
                 FilesToDownload.Add(newItem);
             }
+        }
+
+        /// <summary>
+        /// Скачивает файл в производном потоке.
+        /// </summary>
+        /// <param name="file">Файл на скачивание.</param>
+        /// <param name="downloadPath">Директория, в которую необходимо скачать файл.</param>
+        /// <param name="dispatcher">Позволяет изменять состояние wpf-форм в производном потоке.</param>
+        public async Task DownloadFile(FileInfo file, string downloadPath, Dispatcher dispatcher)
+        {
+            var downFile = new DownloadInfo(file.Name) { Status = DownloadType.InProcess };
+
+            dispatcher.Invoke(
+                () =>
+                {
+                    FilesToDownload.Add(downFile);
+                });
+
+            string localFilePath = await client.DownloadFile(file, downloadPath);
+
+            if (localFilePath != null)
+            {
+                string newFileName = Path.GetFileName(localFilePath);
+
+                var newItem = new DownloadInfo(newFileName) { Status = DownloadType.Downloaded };
+
+                dispatcher.Invoke(
+                   () =>
+                   {
+                       FilesToDownload.Remove(downFile);
+                       FilesToDownload.Add(newItem);
+                   });
+            }
+            else
+            {
+                var newItem = new DownloadInfo(downFile.FileName) { Status = DownloadType.DownloadError };
+
+                dispatcher.Invoke(
+                   () =>
+                   {
+                       FilesToDownload.Remove(downFile);
+                       FilesToDownload.Add(newItem);
+                   });
+            }
+        }
+
+        /// <summary>
+        /// Скачивает все файлы в текущей директории.
+        /// </summary>
+        /// <param name="downloadPath">Директория, в которую необходимо скачивать файлы.</param>
+        public void DownloadAll(string downloadPath, Dispatcher dispatcher)
+        {
+            var tasks = new List<Task>();
+
+            foreach (var file in Files)
+            {
+                if (file.itemType == FileItemType.File)
+                {
+                    tasks.Add(Task.Run(() => DownloadFile(file, downloadPath, dispatcher)));
+                }
+            }
+
+            Task.WaitAll(tasks.ToArray());
         }
 
         /// <summary>

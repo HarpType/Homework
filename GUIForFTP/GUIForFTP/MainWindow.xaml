@@ -77,7 +77,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Content="Скачать файл" Grid.Column="0"></Button>
-                <Button Content="Скачать все файлы" Grid.Column="1"></Button>
+                <Button Name="DownloadAllButton" Content="Скачать все файлы" Grid.Column="1" Click="DownloadAllButton_Click"></Button>
             </Grid>
         </Grid>
 
