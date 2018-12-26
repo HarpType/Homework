@@ -65,6 +65,8 @@
     </Compile>
     <Compile Include="Client.cs" />
     <Compile Include="ClientViewModel.cs" />
+    <Compile Include="EnumToStringConverter.cs" />
+    <Compile Include="FileCreator.cs" />
     <Compile Include="FileInfo.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

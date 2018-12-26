@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Net;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -50,7 +48,7 @@ namespace GUIForFTP
             }
             else if (fileInfo.itemType == FileItemType.File)
             {
-
+                await (DataContext as ClientViewModel).DownloadFile(fileInfo, downloadTextBox.Text.ToString());
             }
         }
     }

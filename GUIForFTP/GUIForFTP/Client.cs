@@ -32,9 +32,10 @@ namespace GUIForFTP
         public async Task<List<FileInfo>> DoListCommand(string dirPath)
         {
             string command = "1 " + dirPath;
+
+            var client = new TcpClient();
             try
             {
-                var client = new TcpClient();
                 await client.ConnectAsync(servAddress, port);
 
                 var stream = client.GetStream();
@@ -79,23 +80,74 @@ namespace GUIForFTP
                 }
 
                 return filesInfo;
-               
+
             }
             catch
             {
+                client.Close();
                 return new List<FileInfo>();
+            }
+            finally
+            {
+                client.Close();
             }
         }
 
         /// <summary>
-        /// Скачивает файл с сервера 
+        /// Скачивает файл с сервера. 
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="downloadPath"></param>
-        /// <returns>True, если скачивание завершилось успешно</returns>
-        public async Task<bool> DownloadFile(FileInfo file, string downloadPath)
+        /// <returns>Полное название файла, если он скачан, null в противном случае.</returns>
+        public async Task<string> DownloadFile(FileInfo file, string downloadPath)
         {
+            string command = "2 " + file.FullName;
 
+            var client = new TcpClient();
+            try
+            {
+                await client.ConnectAsync(servAddress, port);
+
+                var stream = client.GetStream();
+                var writer = new StreamWriter(stream) { AutoFlush = true };
+
+                await writer.WriteLineAsync(command);
+
+                var reader = new StreamReader(stream);
+                string size = await reader.ReadLineAsync();
+
+                if (size == "-1")
+                {
+                    return null;
+                }
+
+                string filePath = FileCreator.Create(file.Name, downloadPath);
+
+                if (filePath == null)
+                {
+                    return null;
+                }
+
+                using (var fileWriter = new StreamWriter(filePath))
+                {
+                    string data;
+                    while ((data = await reader.ReadLineAsync()) != null)
+                    {
+                        await fileWriter.WriteLineAsync(data);
+                    }
+                }
+
+                return filePath;
+            }
+            catch
+            {
+                client.Close();
+                return null;
+            }
+            finally
+            {
+                client.Close();
+            }
         }
     }
 }

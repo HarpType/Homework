@@ -6,6 +6,11 @@
         xmlns:local="clr-namespace:GUIForFTP"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+
+    <Window.Resources>
+        <local:EnumToStringConverter x:Key="DefaultEnumToStringConverter"/>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
@@ -76,11 +81,17 @@
             </Grid>
         </Grid>
 
-        <TextBox x:Name="downloadTextBox" Text="Путь для скачивания файлов" Grid.Row="2" Grid.Column="1"></TextBox>
+        <TextBox x:Name="downloadTextBox" Text="D:\Temp\" Grid.Row="2" Grid.Column="1"></TextBox>
 
-        <ListBox Grid.Row="1" Grid.Column="1">
-
-        </ListBox>
+        <ListView x:Name="DownloadList" ItemsSource="{Binding FilesToDownload}" Margin="5,5,5,5" 
+                  Grid.Column="1" Grid.Row="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Название"  DisplayMemberBinding="{Binding FileName}"/>
+                    <GridViewColumn Header="Статус"  DisplayMemberBinding="{Binding Status, Converter={StaticResource DefaultEnumToStringConverter}}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
     </Grid>
 </Window>

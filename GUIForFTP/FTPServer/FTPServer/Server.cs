@@ -194,14 +194,16 @@ namespace FTPServer
         /// <param name="writer">Стрим, с помощью которого осуществляется связь с клиентом.</param>
         private void DoGetCommand(string filePath, StreamWriter writer)
         {
+            string fullPath = RootDownloadPath + filePath;
+
             try
             {
-                using (var file = File.Open(filePath, FileMode.Open, FileAccess.Read))
+                using (var file = File.Open(fullPath, FileMode.Open, FileAccess.Read))
                 {
                     writer.WriteLine(file.Length);
                 }
 
-                var lines = File.ReadLines(filePath);
+                var lines = File.ReadLines(fullPath);
                 foreach (var line in lines)
                 {
                     writer.WriteLine(line);

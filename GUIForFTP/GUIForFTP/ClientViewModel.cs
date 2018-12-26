@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GUIForFTP
@@ -17,6 +14,7 @@ namespace GUIForFTP
         /// Коллекция файлов
         /// </summary>
         public ObservableCollection<FileInfo> Files { get; set; } = new ObservableCollection<FileInfo>();
+        public ObservableCollection<DownloadInfo> FilesToDownload { get; set; } = new ObservableCollection<DownloadInfo>();
 
         private string defaultPath = @"\";
 
@@ -56,6 +54,68 @@ namespace GUIForFTP
             foreach (var item in dirInfo)
             {
                 Files.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Скачивает файл.
+        /// </summary>
+        /// <param name="file">Файл, который необходимо скачать.</param>
+        /// <param name="downloadPath">Путь для скачивания файла.</param>
+        public async Task DownloadFile(FileInfo file, string downloadPath)
+        {
+            var downFile = new DownloadInfo(file.Name) { Status = DownloadType.InProcess };
+
+            FilesToDownload.Add(downFile);
+
+            string localFilePath = await client.DownloadFile(file, downloadPath);
+
+            if (localFilePath != null)
+            {
+                string newFileName = Path.GetFileName(localFilePath);
+
+                var newItem = new DownloadInfo(newFileName) { Status = DownloadType.Downloaded };
+
+                FilesToDownload.Remove(downFile);
+                FilesToDownload.Add(newItem);
+            }
+            else
+            {
+                var newItem = new DownloadInfo(downFile.FileName) { Status = DownloadType.DownloadError };
+
+                FilesToDownload.Remove(downFile);
+                FilesToDownload.Add(newItem);
+            }
+        }
+
+        /// <summary>
+        /// Статус скачиваемого файла.
+        /// </summary>
+        public enum DownloadType
+        {
+            InProcess,
+            Downloaded,
+            DownloadError
+        }
+
+        /// <summary>
+        /// Класс предоставляет информацию о файлах, которые находятся в загрузке.
+        /// </summary>
+        public class DownloadInfo
+        {
+            /// <summary>
+            /// Имя скачиваемого файла.
+            /// </summary>
+            public string FileName { get; set; }
+
+            /// <summary>
+            /// Статус скачиваемого файла.
+            /// </summary>
+            public DownloadType Status { get; set; } = DownloadType.InProcess;
+
+            public DownloadInfo(string fileName)
+            {
+                FileName = fileName;
             }
         }
     }
