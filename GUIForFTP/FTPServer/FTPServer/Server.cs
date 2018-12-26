@@ -43,7 +43,7 @@ namespace FTPServer
         /// </summary>
         public void Start()
         {
-            Task.Run(StartProcess);
+            Task.Run(() => StartProcess());
 
             startEvent.WaitOne();
         }
@@ -52,7 +52,7 @@ namespace FTPServer
         /// Запускает сервер.
         /// </summary>
         /// <returns></returns>
-        private async Task StartProcess()
+        private void StartProcess()
         {
             StartListening();
 
@@ -132,6 +132,12 @@ namespace FTPServer
             socket.Close();
         }
 
+
+        /// <summary>
+        /// Обрабатывает запрос List. Посылает клиенту информацию о файлах и папках по заданному пути.
+        /// </summary>
+        /// <param name="dirPath">Путь, по которому находятся интересующие клиента файла и папки.</param>
+        /// <param name="writer">Стрим, с помощью которого осуществляется связь с клиентом.</param>
         private void DoListCommand(string dirPath, StreamWriter writer)
         {
             string fullPath = RootDownloadPath + dirPath;
@@ -181,6 +187,11 @@ namespace FTPServer
             }
         }
 
+        /// <summary>
+        /// Обрабатывает запрос Get. Отправляет клиенту содержимое файла.
+        /// </summary>
+        /// <param name="filePath">Путь до файла.</param>
+        /// <param name="writer">Стрим, с помощью которого осуществляется связь с клиентом.</param>
         private void DoGetCommand(string filePath, StreamWriter writer)
         {
             try

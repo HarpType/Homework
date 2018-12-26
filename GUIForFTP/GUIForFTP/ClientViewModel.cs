@@ -25,7 +25,6 @@ namespace GUIForFTP
         /// </summary>
         /// <param name="address">Адрес сервера.</param>
         /// <param name="port">Номер порта.</param>
-        /// <returns></returns>
         public async Task ConnectToServer(string address, int port)
         {
             List<FileInfo> dirInfo = await client.DoListCommand(defaultPath);
@@ -37,6 +36,10 @@ namespace GUIForFTP
             }
         }
 
+        /// <summary>
+        /// Запросить список файлов и папок у сервера по заданной директории.
+        /// </summary>
+        /// <param name="dirPath">Директория, для которой необходимо узнать список.</param>
         public async Task GetDirectory(string dirPath)
         {
             List<FileInfo> dirInfo = await client.DoListCommand(dirPath);
