@@ -40,20 +40,20 @@ for:
   build_script:
     - msbuild Control1/Control1.sln
 
-  -
-branches:
-  only:
-    - guiftp
-    
-environment:
-  matrix:
-   - solution_name: GUIForFTP/GUIForFTP.sln    
-    
-before_build:
-  - cmd: nuget restore GUIForFTP/GUIForFTP.sln
+-
+  branches:
+    only:
+      - guiftp
+      
+  environment:
+    matrix:
+     - solution_name: GUIForFTP/GUIForFTP.sln    
+      
+  before_build:
+    - cmd: nuget restore GUIForFTP/GUIForFTP.sln
 
-build_script:
-  - msbuild GUIForFTP/GUIForFTP.sln
+  build_script:
+    - msbuild GUIForFTP/GUIForFTP.sln
 
 -
   branches:
