@@ -26,6 +26,9 @@ namespace GUIForFTP
         /// <param name="port">Номер порта.</param>
         public async Task ConnectToServer(string address, int port)
         {
+            client.Address = address;
+            client.Port = port;
+
             List<FileInfo> dirInfo = await client.DoListCommand(defaultPath);
 
             Files.Clear();
@@ -145,11 +148,9 @@ namespace GUIForFTP
             {
                 if (file.itemType == FileItemType.File)
                 {
-                    tasks.Add(Task.Run(() => DownloadFile(file, downloadPath, dispatcher)));
+                    Task.Run(async () => await DownloadFile(file, downloadPath, dispatcher));
                 }
             }
-
-            Task.WaitAll(tasks.ToArray());
         }
 
         /// <summary>

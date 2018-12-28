@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GUIForFTP
@@ -16,12 +14,12 @@ namespace GUIForFTP
         /// <summary>
         /// Адрес сервера
         /// </summary>
-        private string servAddress = "127.0.0.1";
+        public string Address { get; set; } = "127.0.0.1";
 
         /// <summary>
         /// Порт сервера.
         /// </summary>
-        private int port = 8238;
+        public int Port { get; set; } = 8238;
 
         /// <summary>
         /// Отправляет запрос List на сервер. Возвращает набор файлов и папок, хранящиеся 
@@ -36,7 +34,7 @@ namespace GUIForFTP
             var client = new TcpClient();
             try
             {
-                await client.ConnectAsync(servAddress, port);
+                await client.ConnectAsync(Address, Port);
 
                 var stream = client.GetStream();
                 var writer = new StreamWriter(stream) { AutoFlush = true };
@@ -48,7 +46,7 @@ namespace GUIForFTP
 
                 if (size == "-1")
                 {
-                    // TODO: EXIT
+                    return new List<FileInfo>();
                 }
 
                 int dirFileCount = 0;
@@ -56,9 +54,9 @@ namespace GUIForFTP
                 {
                     dirFileCount = int.Parse(size);
                 }
-                catch (FormatException)
+                catch (Exception)
                 {
-                    //TODO: EXIT
+                    return new List<FileInfo>();
                 }
 
                 List<FileInfo> filesInfo = new List<FileInfo>();
@@ -106,7 +104,7 @@ namespace GUIForFTP
             var client = new TcpClient();
             try
             {
-                await client.ConnectAsync(servAddress, port);
+                await client.ConnectAsync(Address, Port);
 
                 var stream = client.GetStream();
                 var writer = new StreamWriter(stream) { AutoFlush = true };

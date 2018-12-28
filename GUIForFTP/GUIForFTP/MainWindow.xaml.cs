@@ -49,7 +49,8 @@ namespace GUIForFTP
             }
             else if (fileInfo.itemType == FileItemType.File)
             {
-                await (DataContext as ClientViewModel).DownloadFile(fileInfo, downloadTextBox.Text.ToString());
+                await (DataContext as ClientViewModel).DownloadFile(
+                    fileInfo, downloadTextBox.Text.ToString());
             }
         }
 
@@ -58,7 +59,7 @@ namespace GUIForFTP
         /// </summary>
         private void DownloadAllButton_Click(object sender, RoutedEventArgs e)
         {
-
+            (DataContext as ClientViewModel).DownloadAll(downloadTextBox.Text.ToString(), this.Dispatcher);
         }
     }
 }
