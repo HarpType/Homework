@@ -58,7 +58,6 @@ for:
     - msbuild SimpleFTPServer/SimpleFTPServer.sln    
     - msbuild SimpleFTPClient/SimpleFTPClient.sln
 
--
 branches: 
   only:
     - mynunit
@@ -67,7 +66,6 @@ before_build:
 build:
   project: MyNUnit/MyNUnit.sln
 
--
 branches: 
   only:
     - guiftp
