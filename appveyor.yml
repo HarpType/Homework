@@ -50,7 +50,7 @@ for:
      - solution_name: SimpleFTP/SimpleFTP.sln    
       
   before_build:
-    - cmd: SimpleFTP/SimpleFTP.sln    
+    - cmd: nuget SimpleFTP/SimpleFTP.sln    
   
   build_script:
     - msbuild SimpleFTP/SimpleFTP.sln    
