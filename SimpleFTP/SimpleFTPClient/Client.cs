@@ -30,9 +30,9 @@ namespace SimpleFTPClient
                     data = await reader.ReadToEndAsync();
                 }
             }
-            catch (SocketException)
+            catch (SocketException socketEx)
             {
-                throw new Exception("Ошибка подключения к серверу");
+                throw new Exception("Ошибка подключения к серверу", socketEx);
             }
 
             return data;

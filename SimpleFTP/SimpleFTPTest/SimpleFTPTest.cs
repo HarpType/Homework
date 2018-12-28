@@ -10,8 +10,22 @@ namespace SimpleFTPTest
     [TestClass]
     public class SimpleFTPTest
     {
+        private Server server = new Server();
+
         private readonly string RootPath =
             new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
+
+        [TestInitialize]
+        public void StartServer()
+        {
+            server.Start();
+        }
+
+        [TestCleanup]
+        public void ShutdownServer()
+        {
+            server.Shutdown();
+        }
 
         [TestMethod]
         public void DoListTest()
@@ -44,28 +58,9 @@ namespace SimpleFTPTest
             string serv = "127.0.0.1";
             string command = "1 " +  RootPath + "/TestDirectories/Directory2";
 
-            //var server = new Server();
-            //server.Start();
-
             var data = Client.SendRequest(serv, command).GetAwaiter().GetResult();
 
             Assert.AreEqual(expectedData, data);
-
-            //server.Shutdown();
-        }
-
-        Server server = new Server();
-
-        [TestInitialize]
-        public void StartServer()
-        {
-            server.Start();
-        }
-
-        [TestCleanup]
-        public void ShutdownServer()
-        {
-            server.Shutdown();
         }
 
         [TestMethod]
@@ -76,14 +71,9 @@ namespace SimpleFTPTest
             string serv = "127.0.0.1";
             string command = "2 " + RootPath + "/TestDirectories/Directory2/Hello.txt";
 
-            //var server = new Server();
-            //server.Start();
-
             var data = Client.SendRequest(serv, command).GetAwaiter().GetResult();
 
             Assert.AreEqual(expectedData, data);
-
-           // server.Shutdown();
         }
 
         [TestMethod]
@@ -92,14 +82,9 @@ namespace SimpleFTPTest
             string serv = "127.0.0.1";
             string command = "2 " +  RootPath + "WrongDirectory/wrong.txt";
 
-            //var server = new Server();
-            //server.Start();
-
             var data = Client.SendRequest(serv, command).GetAwaiter().GetResult();
 
             Assert.AreEqual("-1", data);
-
-            //server.Shutdown();
         }
 
         [TestMethod]
@@ -108,14 +93,9 @@ namespace SimpleFTPTest
             string serv = "127.0.0.1";
             string command = "wrongCommand";
 
-            //var server = new Server();
-            //server.Start();
-
             var data = Client.SendRequest(serv, command).GetAwaiter().GetResult();
 
             Assert.AreEqual("Command not found", data);
-
-            //server.Shutdown();
         }
     }
 }

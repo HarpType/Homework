@@ -15,17 +15,20 @@ namespace SimpleFTPServer
     {
         private const int port = 8238;
 
-        ConcurrentBag<Socket> sockets = new ConcurrentBag<Socket>();
+        /// <summary>
+        /// Набор сокетов для подключенных клиентов.
+        /// </summary>
+        private ConcurrentBag<Socket> sockets = new ConcurrentBag<Socket>();
 
-        TcpListener listener = new TcpListener(IPAddress.Any, port);
+        private TcpListener listener = new TcpListener(IPAddress.Any, port);
 
-        CancellationTokenSource cts = new CancellationTokenSource();
-        CancellationToken ct;
+        private CancellationTokenSource cts = new CancellationTokenSource();
+        private CancellationToken ct;
 
-        AutoResetEvent mainCloseEvent = new AutoResetEvent(false);
-        AutoResetEvent listenerCloseEvent = new AutoResetEvent(false);
-        AutoResetEvent socketEvent = new AutoResetEvent(false);
-        AutoResetEvent startEvent = new AutoResetEvent(false);
+        private AutoResetEvent mainCloseEvent = new AutoResetEvent(false);
+        private AutoResetEvent listenerCloseEvent = new AutoResetEvent(false);
+        private AutoResetEvent socketEvent = new AutoResetEvent(false);
+        private AutoResetEvent startEvent = new AutoResetEvent(false);
 
         public Server()
         {
@@ -37,7 +40,7 @@ namespace SimpleFTPServer
         /// </summary>
         public void Start()
         {
-            Task.Run(StartProcess);
+            Task.Run(() => StartProcess());
 
             startEvent.WaitOne();
         }
@@ -46,9 +49,9 @@ namespace SimpleFTPServer
         /// Запускает сервер.
         /// </summary>
         /// <returns></returns>
-        private async Task StartProcess()
+        private void StartProcess()
         {
-            StartListening();
+            Task.Run(() => StartListening());
 
             while (true)
             {
@@ -100,28 +103,34 @@ namespace SimpleFTPServer
         /// <param name="socket">socket, созданный для общения с клиентом.</param>
         private void ProcessNewRequest(Socket socket)
         {
-            var stream = new NetworkStream(socket);
-            var reader = new StreamReader(stream);
-            var command = reader.ReadLine();
-
-            string receiveData = "Command not found";
-
-            if (command.Length > 2)
+            try
             {
-                if (command[0] == '1')
-                {
-                    receiveData = FileCommander.DoListCommand(command.Substring(1));
-                }
-                else if (command[0] == '2')
-                {
-                    receiveData = FileCommander.DoGetCommand(command.Substring(1));
-                }
-            }
+                var stream = new NetworkStream(socket);
+                var reader = new StreamReader(stream);
+                var command = reader.ReadLine();
 
-            var writer = new StreamWriter(stream);
-            writer.Write(receiveData);
-            writer.Flush();
-            socket.Close();
+                string receiveData = "Command not found";
+
+                if (command.Length > 2)
+                {
+                    if (command[0] == '1')
+                    {
+                        receiveData = FileCommander.DoListCommand(command.Substring(1));
+                    }
+                    else if (command[0] == '2')
+                    {
+                        receiveData = FileCommander.DoGetCommand(command.Substring(1));
+                    }
+                }
+
+                var writer = new StreamWriter(stream);
+                writer.Write(receiveData);
+                writer.Flush();
+            }
+            finally
+            {
+                socket.Close();
+            }
         }
 
         /// <summary>
