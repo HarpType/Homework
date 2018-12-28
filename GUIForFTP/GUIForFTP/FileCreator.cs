@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace GUIForFTP
 {
@@ -20,6 +15,11 @@ namespace GUIForFTP
         /// <returns>Путь к файлу, если он создан, null в противном случае.</returns>
         public static string Create(string fileName, string downloadPath)
         {
+            if (downloadPath[downloadPath.Length - 1] != '\\')
+            {
+                return null;
+            }
+
             if (!Directory.Exists(downloadPath))
             {
                 return null;

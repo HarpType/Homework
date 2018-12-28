@@ -54,7 +54,7 @@ namespace FTPServer
         /// <returns></returns>
         private void StartProcess()
         {
-            StartListening();
+            Task.Run(() => StartListening());
 
             while (true)
             {
@@ -108,28 +108,33 @@ namespace FTPServer
         /// <param name="socket">socket, созданный для общения с клиентом.</param>
         private async void ProcessNewRequest(Socket socket)
         {
-            var stream = new NetworkStream(socket);
-            var reader = new StreamReader(stream);
-            var command = await reader.ReadLineAsync();
-
-            var writer = new StreamWriter(stream) { AutoFlush = true };
-            if (command.Length >= 2)
+            try
             {
-                if (command[0] == '1')
+                var stream = new NetworkStream(socket);
+                var reader = new StreamReader(stream);
+                var command = await reader.ReadLineAsync();
+
+                var writer = new StreamWriter(stream) { AutoFlush = true };
+                if (command.Length >= 2)
                 {
-                    DoListCommand(command.Substring(2), writer);
+                    if (command[0] == '1')
+                    {
+                        DoListCommand(command.Substring(2), writer);
+                    }
+                    else if (command[0] == '2')
+                    {
+                        DoGetCommand(command.Substring(2), writer);
+                    }
                 }
-                else if (command[0] == '2')
+                else
                 {
-                    DoGetCommand(command.Substring(2), writer);
+                    writer.WriteLine("Command not found");
                 }
             }
-            else
+            finally
             {
-                writer.WriteLine("Command not found");
+                socket.Close();
             }
-
-            socket.Close();
         }
 
 
@@ -209,7 +214,7 @@ namespace FTPServer
                     writer.WriteLine(line);
                 }
             }
-            catch (Exception)
+            catch
             {
                 writer.WriteLine("-1");
             }

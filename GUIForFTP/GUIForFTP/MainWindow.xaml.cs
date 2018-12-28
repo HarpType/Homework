@@ -61,5 +61,6 @@ namespace GUIForFTP
         {
             (DataContext as ClientViewModel).DownloadAll(downloadTextBox.Text.ToString(), this.Dispatcher);
         }
+
     }
 }
