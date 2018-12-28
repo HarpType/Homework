@@ -39,15 +39,15 @@ namespace GUIForFTP
         {
             var fileInfo = ((sender as ListView).SelectedItem) as FileInfo;
 
-            if (fileInfo.itemType == FileItemType.Upper)
+            if (fileInfo.ItemType == FileItemType.Upper)
             {
                 await (DataContext as ClientViewModel).GetDirectory(fileInfo.FullName);
             }
-            else if (fileInfo.itemType == FileItemType.Directory)
+            else if (fileInfo.ItemType == FileItemType.Directory)
             {
                 await (DataContext as ClientViewModel).GetDirectory(fileInfo.FullName);
             }
-            else if (fileInfo.itemType == FileItemType.File)
+            else if (fileInfo.ItemType == FileItemType.File)
             {
                 await (DataContext as ClientViewModel).DownloadFile(
                     fileInfo, downloadTextBox.Text.ToString());

@@ -32,9 +32,9 @@ namespace GUIForFTP
         public string Name {
             get
             {
-                if (itemType == FileItemType.Directory)
+                if (ItemType == FileItemType.Directory)
                     return Path.GetFileName(Path.GetDirectoryName(FullName));
-                else if (itemType == FileItemType.File)
+                else if (ItemType == FileItemType.File)
                     return Path.GetFileName(FullName);
                 else
                     return "...";
@@ -43,7 +43,7 @@ namespace GUIForFTP
         /// <summary>
         /// Тип элемента.
         /// </summary>
-        public FileItemType itemType { get; }
+        public FileItemType ItemType { get; }
 
         /// <summary>
         /// Возвращает название типа элемента.
@@ -52,9 +52,9 @@ namespace GUIForFTP
         {
             get
             {
-                if (itemType == FileItemType.Directory)
+                if (ItemType == FileItemType.Directory)
                     return "Directory";
-                else if (itemType == FileItemType.File)
+                else if (ItemType == FileItemType.File)
                     return "File";
                 else
                     return "";
@@ -64,7 +64,7 @@ namespace GUIForFTP
         public FileInfo(string fullName, FileItemType itemType)
         {
             FullName = fullName;
-            this.itemType = itemType;
+            this.ItemType = itemType;
         }
     }
 }

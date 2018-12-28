@@ -146,7 +146,7 @@ namespace GUIForFTP
 
             foreach (var file in Files)
             {
-                if (file.itemType == FileItemType.File)
+                if (file.ItemType == FileItemType.File)
                 {
                     Task.Run(async () => await DownloadFile(file, downloadPath, dispatcher));
                 }

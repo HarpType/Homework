@@ -88,7 +88,7 @@
             Список скачанных файлов</TextBlock>
 
         <ListView x:Name="DownloadList" ItemsSource="{Binding FilesToDownload}" Margin="5,5,5,5" 
-                Grid.Row="1"  Grid.Column="1" SelectionChanged="DownloadList_SelectionChanged">
+                Grid.Row="1"  Grid.Column="1">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Название" Width="100" DisplayMemberBinding="{Binding FileName}"/>

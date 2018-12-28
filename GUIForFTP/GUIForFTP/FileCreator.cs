@@ -5,7 +5,7 @@ namespace GUIForFTP
     /// <summary>
     /// Класс-помощник для скачивания файлов с сервера.
     /// </summary>
-    class FileCreator
+    public static class FileCreator
     {
         /// <summary>
         /// Создаёт файл по указанному пути.
