@@ -47,16 +47,13 @@ for:
 
   environment:
     matrix:
-     - solution_name: SimpleFTPServer/SimpleFTPServer.sln    
-     - solution_name: SimpleFTPClient/SimpleFTPClient.sln
+     - solution_name: SimpleFTP/SimpleFTP.sln    
       
   before_build:
-    - cmd: SimpleFTPServer/SimpleFTPServer.sln    
-    - cmd: SimpleFTPClient/SimpleFTPClient.sln
+    - cmd: nuget restore SimpleFTP/SimpleFTP.sln    
   
   build_script:
-    - msbuild SimpleFTPServer/SimpleFTPServer.sln    
-    - msbuild SimpleFTPClient/SimpleFTPClient.sln
+    - msbuild SimpleFTP/SimpleFTP.sln    
 
 branches: 
   only:
