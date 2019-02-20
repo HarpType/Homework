@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="reverse.fsx" />
+    <None Include="fibonacci.fsx" />
     <None Include="fact.fsx" />
   </ItemGroup>
 

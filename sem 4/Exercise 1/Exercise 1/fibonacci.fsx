@@ -1,4 +1,6 @@
-﻿let fibonacci n =
+﻿(* Функция выдаёт элемент последовательности чисел Фибоначчи
+ по заданной позиции n *)
+let fibonacci n =
     let rec acc_fibonacci n i acc1 acc2 =
             if n = i then
                 acc1

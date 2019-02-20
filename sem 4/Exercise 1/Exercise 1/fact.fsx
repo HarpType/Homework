@@ -1,4 +1,5 @@
-﻿let fact x = 
+﻿// Функция считает факториал от числа x
+let fact x = 
     if x < 0 then
         0
     else
