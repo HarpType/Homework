@@ -1,11 +1,11 @@
 ﻿(* Функция выдаёт элемент последовательности чисел Фибоначчи
  по заданной позиции n *)
 let fibonacci n =
-    let rec acc_fibonacci n i acc1 acc2 =
+    let rec accFibonacci n i acc1 acc2 =
             if n = i then
                 acc1
             elif n > 0 then
-                acc_fibonacci n (i+1) acc2 (acc1+acc2)
+                accFibonacci n (i+1) acc2 (acc1+acc2)
             else
-                acc_fibonacci n (i-1) (acc2-acc1) acc1
-    acc_fibonacci n 0 0 1           
+                accFibonacci n (i-1) (acc2-acc1) acc1
+    accFibonacci n 0 0 1           
