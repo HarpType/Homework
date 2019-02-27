@@ -6,10 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="arrayPower.fsx" />
-    <None Include="reverse.fsx" />
+    <None Include="reverse_and_listPower.fsx" />
+    <None Include="factorial.fsx" />
     <None Include="fibonacci.fsx" />
-    <None Include="fact.fsx" />
   </ItemGroup>
 
 </Project>
