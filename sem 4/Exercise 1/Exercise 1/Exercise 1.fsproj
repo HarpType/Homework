@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Exercise_1</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="reverse_and_listPower.fsx" />
+    <None Include="factorial.fsx" />
+    <None Include="fibonacci.fsx" />
+  </ItemGroup>
+
+</Project>
