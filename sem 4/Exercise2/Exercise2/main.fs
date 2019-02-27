@@ -28,4 +28,20 @@ let rec listsAreEqual (list1:list<_>) (list2:list<_>) =
     | ([],h::t) | (h::t,[]) -> false
     | ([],[]) -> true
 
-let answer = listsAreEqual [1; 2; 3] [1; 2; 3]
+
+// Функция, возвращающая первые n (или максимальное возможное число)
+// элементов списка в виде нового списка.
+let takeElements n (list:list<_>) =
+    let rec iterTakeElements n (list:list<_>) (accumList:list<_>) i =
+        if n = i then
+            accumList
+        else
+            match list with
+            | h::t -> iterTakeElements n t (h::accumList) (i + 1)
+            | [] -> accumList
+    iterTakeElements n list.Tail [list.Head] 1
+
+// Функция проверяет, является ли заданный список палиндромом.
+// Выводит true, если список является палиндромом,
+// false в противном случае.
+let isListPalindrome list = 
