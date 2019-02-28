@@ -29,19 +29,28 @@ let rec listsAreEqual (list1:list<_>) (list2:list<_>) =
     | ([],[]) -> true
 
 
-// Функция, возвращающая первые n (или максимальное возможное число)
-// элементов списка в виде нового списка.
-let takeElements n (list:list<_>) =
-    let rec iterTakeElements n (list:list<_>) (accumList:list<_>) i =
-        if n = i then
-            accumList
-        else
-            match list with
-            | h::t -> iterTakeElements n t (h::accumList) (i + 1)
-            | [] -> accumList
-    iterTakeElements n list.Tail [list.Head] 1
+// Функция, делящая список на 2 части: в первой части находятся n элементов,
+// во второй - оставшиеся элементы.
+let divideList n (list:list<_>) =
+    if n <= 0 then
+        ([], list)
+    else
+        let rec iterDivideList n (list:list<_>) (accumList:list<_>) i =
+            if n = i then
+                (accumList, list)
+            else
+                match list with
+                | h::t -> iterDivideList n t (h::accumList) (i + 1)
+                | [] -> (accumList, [])
+        iterDivideList n list.Tail [list.Head] 1
 
 // Функция проверяет, является ли заданный список палиндромом.
 // Выводит true, если список является палиндромом,
 // false в противном случае.
-let isListPalindrome list = 
+let isPalindrome (list:list<_>) = 
+    match divideList (list.Length / 2) list with
+    | (list1, list2) ->
+        if (list.Length % 2 = 0) then
+            listsAreEqual list1 list2
+        else
+            listsAreEqual list1 list2.Tail

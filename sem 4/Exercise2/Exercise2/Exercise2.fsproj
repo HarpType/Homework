@@ -6,8 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Palindrome.fs" />
-    <Compile Include="FirstPosition.fs" />
+    <Compile Include="main.fs" />
   </ItemGroup>
 
 </Project>
