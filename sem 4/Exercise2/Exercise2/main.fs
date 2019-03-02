@@ -27,7 +27,7 @@ let reverseElements n (list:list<_>) =
                 (accumList, list)
             else
                 match list with
-                | h::t -> iterDivideList n t (h::accumList) (i + 1)
+                | h::tail -> iterDivideList n tail (h::accumList) (i + 1)
                 | [] -> (accumList, [])
         iterDivideList n list.Tail [list.Head] 1
 
@@ -48,3 +48,35 @@ let isListPalindrome (list:list<_>) =
 let isPalindrome (str:string) =
      str.ToLower().ToCharArray() |> Array.toList |> 
         List.filter(fun c -> c <> ' ') |> isListPalindrome
+
+
+(* Блока задачи 3: сортировка слиянием*)
+
+/// Функция делит заданный список list на два, помещая одну часть в список left,
+/// а другую в список right.
+let rec splitList list left right =
+        match list with
+        | [] -> (left, right)
+        | a::b::tail -> splitList tail (a::left) (b::right)
+        | [a] -> (a::left, right)
+
+/// Объединяет 2 отсортированных списка в один отсортированный.
+let rec merge list1 list2 accumList =
+    match (list1, list2) with
+    | (h1::tail1, h2::tail2) ->
+        if h1 <= h2 then
+            merge tail1 list2 (h1::accumList)
+        else
+            merge list1 tail2 (h2::accumList)
+    | (h::tail,[]) | ([], h::tail) -> merge tail [] (h::accumList)
+    | ([], []) -> List.rev accumList
+
+/// Функция сортирует заданный список слиянием.
+let rec mergeSort list =
+    match list with
+    | [] -> []
+    | [_] -> list
+    | _ -> 
+        match splitList list [] [] with
+        | (left, right) -> 
+            merge (mergeSort left) (mergeSort right) []
