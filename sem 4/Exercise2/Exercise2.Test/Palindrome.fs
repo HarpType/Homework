@@ -20,4 +20,3 @@ module Palindrome =
     [<Test>]
     let ``"London is the capital of Great Britain" is not a palindrome`` ()=
         isPalindrome "London is the capital of Great Britain" |> should not' (be True)
-
