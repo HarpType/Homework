@@ -3,7 +3,7 @@ namespace Tests
 module EvenNumbers = 
     open NUnit.Framework
     open FsUnit
-    open EvenNumbers.CountingEvenNumbers
+    open CountingEvenNumbers
 
     /// Подсчитывает количество чётных чисел 3 раза разными способами,
     /// объединяя результат в кортеж.

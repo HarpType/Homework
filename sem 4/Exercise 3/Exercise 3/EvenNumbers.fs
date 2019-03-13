@@ -1,4 +1,4 @@
-﻿module CountingEvenNumbers =
+﻿module CountingEvenNumbers 
 
     /// Функция подсчитывает количество чётных чисел в списке. 
     /// В основе функции - Seq.map.
