@@ -15,6 +15,16 @@
         | EmptyNode -> EmptyNode
         | Node(x, l, r) -> Node(func x, map l func, map r func)
 
+    /// Реализация map для двоичного дерева с хвостовой рекурсией.
+    let mapTailRec binTree func =
+        let rec linearizeMap binTree func cont =
+            match binTree with
+            | Node(x, l, r) -> linearizeMap l func 
+                                (fun(lTree) -> linearizeMap r  func 
+                                                (fun(rTree) -> cont(Node(func x,  lTree, rTree))))
+            | EmptyNode -> cont(EmptyNode)
+        linearizeMap binTree func (fun(tree) -> tree)
+
     (* Блок задачи 3: вычисление значения по дереву выражения. *)
 
     /// Функция вычисляет значение по заданному дереву арифметического выражения.

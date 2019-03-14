@@ -23,12 +23,15 @@ module BinTreeMapTest =
 
     [<Test>]
     let ``Mapping x^2 with EmptyTree equals EmptyTree`` ()=
-        BinTree.map (EmptyNode) (fun(x) -> x * x) |> should equal (EmptyNode:BinTree<int32>)
+        BinTree.map EmptyNode (fun x -> x * x) |> should equal (EmptyNode:BinTree<int32>)
+        BinTree.mapTailRec EmptyNode (fun x -> x * x) |> should equal (EmptyNode:BinTree<int32>)
 
     [<Test>]
     let ``Mapping x^2 with binTree`` ()=
         BinTree.map testBinTree1 (fun x -> x * x) |> should equal resultBinTree1
+        BinTree.mapTailRec testBinTree1 (fun x -> x * x) |> should equal resultBinTree1
 
     [<Test>]
     let ``Mapping mod with binTree`` ()=
         BinTree.map testBinTree2 (fun x -> x % 2) |> should equal resultBinTree2
+        BinTree.mapTailRec testBinTree2 (fun x -> x % 2) |> should equal resultBinTree2
