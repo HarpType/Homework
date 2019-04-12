@@ -21,3 +21,7 @@ module SumFibonacciTest =
     let ``Square stars string 4x4`` ()=
         squareStarString 4 |> should equal string4x4
 
+    [<Test>]
+    let ``Square stars string -5`` ()=
+        squareStarString -5 |> should equal ""
+
