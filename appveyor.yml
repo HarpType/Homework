@@ -1,12 +1,10 @@
-
-
 image: Visual Studio 2017
     
 before_build:
-  - nuget restore "sem 4/Exercise2/Exercise2.sln"
+  - nuget restore "sem 4/Exercise 3/Exercise 3.sln"
 
 build:
-  project: "sem 4/Exercise2/Exercise2.sln"
+  project: "sem 4/Exercise 3/Exercise 3.sln"
 
 test_script:
-  - dotnet test "sem 4/Exercise2/Exercise2.sln"
+  - dotnet test "sem 4/Exercise 3/Exercise 3.sln"
