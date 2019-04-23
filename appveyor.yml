@@ -1,8 +1,36 @@
 version: 1.0.{build}
 image: Visual Studio 2017
-install:
-  - ps: choco install -y miktex
-  - cmd:  refreshenv
+    
+for:
+-
+  branches:
+    only:
+      - sem4_ex3
 
-build_script:
-  - cmd: pdflatex .\sem 4\Exercise 4\Task1_2.tex
+  before_build:
+    - nuget restore "sem 4/Exercise 3/Exercise 3.sln"
+
+  build:
+    project: "sem 4/Exercise 3/Exercise 3.sln"
+
+  test_script:
+    - dotnet test "sem 4/Exercise 3/Exercise 3.sln"
+    
+-
+  branches:
+    only:
+      - sem4_ex4
+      
+- 
+  branches:
+    only:
+      - sem4_ex5
+
+  before_build:
+    - nuget restore "sem 4/Exercise 5/Exercise 5.sln"
+
+  build:
+    project: "sem 4/Exercise 5/Exercise 5.sln"
+
+  test_script:
+    - dotnet test "sem 4/Exercise 5/Exercise 5.sln"
