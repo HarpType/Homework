@@ -1,10 +1,35 @@
 image: Visual Studio 2017
     
-before_build:
-  - nuget restore "sem 4/Exercise 3/Exercise 3.sln"
+for:
+-
+  branches:
+    only:
+      - sem4_ex3
 
-build:
-  project: "sem 4/Exercise 3/Exercise 3.sln"
+  before_build:
+    - nuget restore "sem 4/Exercise 3/Exercise 3.sln"
 
-test_script:
-  - dotnet test "sem 4/Exercise 3/Exercise 3.sln"
+  build:
+    project: "sem 4/Exercise 3/Exercise 3.sln"
+
+  test_script:
+    - dotnet test "sem 4/Exercise 3/Exercise 3.sln"
+    
+-
+  branches:
+    only:
+      - sem4_ex4
+      
+- 
+  branches:
+    only:
+      - sem4_ex5
+
+  before_build:
+    - nuget restore "sem 4/Exercise 5/Exercise 5.sln"
+
+  build:
+    project: "sem 4/Exercise 5/Exercise 5.sln"
+
+  test_script:
+    - dotnet test "sem 4/Exercise 5/Exercise 5.sln"
