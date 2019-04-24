@@ -11,7 +11,7 @@ open System
     /// Проверяет корректность введённого телефонного номера.
     let isPhoneNumber (phoneNumber:string) =
         let rec isPhoneNumberAccum (phoneList:list<char>) i =
-            if i = 12 then
+            if i = 11 then
                 phoneList.IsEmpty
             else
                 match phoneList with
@@ -22,14 +22,7 @@ open System
                         false
                 | [] -> false
 
-        let phoneNumberList = Seq.toList phoneNumber
-        match phoneNumberList with
-        | h :: t -> 
-            if (h = '+') then
-                isPhoneNumberAccum t 0
-            else 
-                isPhoneNumberAccum phoneNumberList 0
-        | [] -> false
+        isPhoneNumberAccum (Seq.toList phoneNumber) 0
 
 
     /// Вставляет запись (имя и телефон) в двоичное дерево. 
@@ -61,6 +54,42 @@ open System
                 findByPhoneNumber rightNode phoneNumber
             else
                 findByPhoneNumber leftNode phoneNumber
+
+
+    /// Тип, содержащий информацию об обходе дерева в глубину.
+    type ContinuationStep =
+        | Finished
+        | Step of  PhoneRecord * (unit -> ContinuationStep)
+
+
+    /// Формирует шаги обхода дерева в глубину.
+    let rec linearizePhoneTree phoneRecordTree cont = 
+        match phoneRecordTree with
+        | EmptyNode -> cont()
+        | Node(record, leftNode, rightNode) ->
+            Step(record, (fun () -> linearizePhoneTree leftNode (fun () ->
+                            linearizePhoneTree rightNode cont)))
+
+    
+    /// Запускает обход дерева в глубину, применяет функцию func 
+    /// к каждой записи в узле. Возвращает последовательность из значений, которая удовлетворяет
+    /// ограничениям, предоставленные пользователем.
+    let iterPhoneTree phoneRecordTree checkFunc =
+        let steps = linearizePhoneTree phoneRecordTree (fun () -> Finished)
+
+        let rec processSteps step = 
+            seq {
+            match step with
+            | Finished -> ()
+            | Step(record, getNext) ->
+                if checkFunc record then
+                    yield record
+                yield! processSteps(getNext()) }
+
+        processSteps steps
+
+    let findByName phoneRecordTree name = iterPhoneTree phoneRecordTree (fun record -> if record.Name = name then true else false)
+
 
     /// Функция осуществляет общение с пользователем через консоль.
     let rec StepPhoneBook phoneRecordTree = 

@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="PhoneBookTest.fs" />
     <Compile Include="PointFreeTest.fs" />
     <Compile Include="BracketsTest.fs" />
   </ItemGroup>

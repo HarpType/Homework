@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="PhoneBook.fs" />
     <Compile Include="PointFree.fs" />
     <Compile Include="Brackets.fs" />
   </ItemGroup>
