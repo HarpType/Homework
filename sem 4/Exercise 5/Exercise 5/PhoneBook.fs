@@ -31,7 +31,7 @@ open System.IO
     /// уникальное значение, имя -- не уникальное.
     /// В случае вставки записи с уже существующим номером, происходит его обновление.
     let rec addPhoneRecord phoneRecordTree newPhoneRecord =
-        if not (isPhoneNumber newPhoneRecord.PhoneNumber) then
+        if isPhoneNumber newPhoneRecord.PhoneNumber |> not then
             failwith "The wrong phone number."
 
         match phoneRecordTree with
@@ -103,17 +103,18 @@ open System.IO
     /// Сохраняет содержимое дерева с телефонными записями в файл с именем fileName.
     let savePhoneBookToFile phoneRecordTree fileName = 
         let listPhoneRecord = iterPhoneTree phoneRecordTree (fun phoneRecord -> true)
-                                |> Seq.map (fun phoneRecord -> phoneRecord.PhoneNumber + " " + phoneRecord.Name) |> Seq.toList
+                                |> Seq.map (fun phoneRecord -> phoneRecord.Name + "|" + phoneRecord.PhoneNumber) |> Seq.toList
 
         File.WriteAllLines(fileName, listPhoneRecord)
 
+    /// Выгружает данные из файла.
     let loadPhoneBookFromFile fileName =
         let phoneRecords = File.ReadLines fileName |> Seq.toList
 
         if phoneRecords.IsEmpty then
             EmptyNode
         else 
-            let phoneRecordTree = phoneRecords |> List.map (fun record -> {Name=record.Split(' ').[0]; PhoneNumber=record.Split(' ').[1]})
+            let phoneRecordTree = phoneRecords |> List.map (fun record -> {Name=record.Split('|').[0]; PhoneNumber=record.Split('|').[1]})
         
             phoneRecordTree |> Seq.fold (fun accum phoneRecord -> addPhoneRecord accum phoneRecord) EmptyNode
 
@@ -164,7 +165,24 @@ open System.IO
                 printfn "There is no this name in the phone book!"
 
                 stepPhoneBook phoneRecordTree
+        | "save-to-file" ->
+            printfn "Enter a file name:"
+            let fileName = Console.ReadLine()
 
+            savePhoneBookToFile phoneRecordTree fileName
 
-        | _ -> 0
+            stepPhoneBook phoneRecordTree
+        | "load-from-file" ->
+            printfn "Enter a file name:"
+            let fileName = Console.ReadLine()
+
+            try
+                loadPhoneBookFromFile fileName |> stepPhoneBook
+            with
+                | Failure(msg) -> printf "%s" msg; stepPhoneBook phoneRecordTree
+
+        | _ -> 
+            printfn "Wrong command."
+
+            stepPhoneBook phoneRecordTree
     

@@ -10,7 +10,7 @@
         let add4 = {Name="Pavel Pavel"; PhoneNumber="22345359686"} |> addPhoneRecord add3
         let add5 = {Name="Ulia Ul"; PhoneNumber="56899829846"} |> addPhoneRecord add4
         let add6 = {Name="Kir Korov"; PhoneNumber="89399893846"} |> addPhoneRecord add5
-        let add7 = {Name="Pul Lya"; PhoneNumber="79832829642"} |> addPhoneRecord add6
+        let add7 = {Name="Bill Ill"; PhoneNumber="79832829642"} |> addPhoneRecord add6
 
         add7
 
@@ -38,11 +38,20 @@
 
     [<Test>]
     let findByNameTest ()=
-        savePhoneBookToFile testPhoneBook "test.pb"
+        let kirPhones = findByName testPhoneBook "Kir Korov"
+        let somebodyPhones = findByName testPhoneBook "Somebody"
 
-        let phones = findByName testPhoneBook "Kir Korov"
+        List.contains "89399893846" kirPhones |> should equal true
+        List.contains "89157785688" kirPhones |> should equal true
+        somebodyPhones.IsEmpty |> should equal true
 
-        Seq.contains "89399893846" phones |> should equal true
-        Seq.contains "89157785688" phones |> should equal true
+    [<Test>]
+    let saveAndLoadTest ()=
+        savePhoneBookToFile testPhoneBook "test.pb" 
+        let loadedTestPhoneBook = loadPhoneBookFromFile "test.pb"
+        
+        findByPhoneNumber loadedTestPhoneBook "79832829642" |> Option.get |> should equal "Bill Ill"
+        findByPhoneNumber loadedTestPhoneBook "56899829846" |> Option.get |>  should equal "Ulia Ul"
+        findByName loadedTestPhoneBook "Ivan Ivanov" |> should equal ["89349256887";]
 
 
