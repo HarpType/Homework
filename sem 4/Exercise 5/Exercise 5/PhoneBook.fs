@@ -1,6 +1,7 @@
 ﻿module PhoneBook
 
 open System
+open System.IO
 
     type PhoneRecord = {Name:string; PhoneNumber:string}
 
@@ -30,6 +31,9 @@ open System
     /// уникальное значение, имя -- не уникальное.
     /// В случае вставки записи с уже существующим номером, происходит его обновление.
     let rec addPhoneRecord phoneRecordTree newPhoneRecord =
+        if not (isPhoneNumber newPhoneRecord.PhoneNumber) then
+            failwith "The wrong phone number."
+
         match phoneRecordTree with
         | EmptyNode -> Node(newPhoneRecord, EmptyNode, EmptyNode)
         | Node(phoneRecord, leftNode, rightNode) ->
@@ -73,7 +77,7 @@ open System
     
     /// Запускает обход дерева в глубину, применяет функцию func 
     /// к каждой записи в узле. Возвращает последовательность из значений, которая удовлетворяет
-    /// ограничениям, предоставленные пользователем.
+    /// ограничениям, предоставленные функцией func.
     let iterPhoneTree phoneRecordTree checkFunc =
         let steps = linearizePhoneTree phoneRecordTree (fun () -> Finished)
 
@@ -88,11 +92,35 @@ open System
 
         processSteps steps
 
-    let findByName phoneRecordTree name = iterPhoneTree phoneRecordTree (fun record -> if record.Name = name then true else false)
+
+    /// Поиск телефона по имени. Возвращает список всех телефонов, имя записей которых совпадает с указанным.
+    let findByName phoneRecordTree name = 
+            let seqRecords = iterPhoneTree phoneRecordTree (fun record -> if record.Name = name then true else false)
+            let listPhones = Seq.map (fun phoneRecord -> phoneRecord.PhoneNumber) seqRecords
+
+            Seq.toList listPhones
+
+    /// Сохраняет содержимое дерева с телефонными записями в файл с именем fileName.
+    let savePhoneBookToFile phoneRecordTree fileName = 
+        let listPhoneRecord = iterPhoneTree phoneRecordTree (fun phoneRecord -> true)
+                                |> Seq.map (fun phoneRecord -> phoneRecord.PhoneNumber + " " + phoneRecord.Name) |> Seq.toList
+
+        File.WriteAllLines(fileName, listPhoneRecord)
+
+    let loadPhoneBookFromFile fileName =
+        let phoneRecords = File.ReadLines fileName |> Seq.toList
+
+        if phoneRecords.IsEmpty then
+            EmptyNode
+        else 
+            let phoneRecordTree = phoneRecords |> List.map (fun record -> {Name=record.Split(' ').[0]; PhoneNumber=record.Split(' ').[1]})
+        
+            phoneRecordTree |> Seq.fold (fun accum phoneRecord -> addPhoneRecord accum phoneRecord) EmptyNode
+
 
 
     /// Функция осуществляет общение с пользователем через консоль.
-    let rec StepPhoneBook phoneRecordTree = 
+    let rec stepPhoneBook phoneRecordTree = 
         printfn "Enter the command (exit, add, find-by-phone, find-by-name, write-to-console, save-to-file, load-from-file):"
         let command = Console.ReadLine()
 
@@ -105,10 +133,10 @@ open System
             let newPhoneNumber = Console.ReadLine()
 
             if isPhoneNumber newPhoneNumber then
-                addPhoneRecord phoneRecordTree {Name=name; PhoneNumber=newPhoneNumber} |> StepPhoneBook
+                addPhoneRecord phoneRecordTree {Name=name; PhoneNumber=newPhoneNumber} |> stepPhoneBook
             else 
                 printfn "Wrong phone number!"
-                StepPhoneBook phoneRecordTree
+                stepPhoneBook phoneRecordTree
         | "find-by-phone" ->
             printfn "Enter a phone number:"
             let phoneNumber = Console.ReadLine()
@@ -118,9 +146,25 @@ open System
                 | Some(name) -> printfn "%s" name
                 | None -> printfn "No such phone number"
 
-                StepPhoneBook phoneRecordTree
+                stepPhoneBook phoneRecordTree
             else
                 printfn "Wrong phone number!"
-                StepPhoneBook phoneRecordTree
+                stepPhoneBook phoneRecordTree
+        | "find-by-name" ->
+            printfn "Enter a name:"
+            let name = Console.ReadLine()
+
+            let phones = findByName phoneRecordTree name
+            if phones.IsEmpty |> not then
+                Seq.iter (fun phone -> printf "%s " phone) phones
+                printfn ""
+                
+                stepPhoneBook phoneRecordTree
+            else
+                printfn "There is no this name in the phone book!"
+
+                stepPhoneBook phoneRecordTree
+
+
         | _ -> 0
     
