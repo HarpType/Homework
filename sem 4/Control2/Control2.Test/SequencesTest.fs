@@ -1,4 +1,6 @@
-﻿module SequencesTest
+﻿namespace Test
+
+module SequencesTest =
 
     open NUnit.Framework
     open FsUnit
