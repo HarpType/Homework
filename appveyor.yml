@@ -15,12 +15,6 @@ for:
 
   test_script:
     - dotnet test "sem 4/Exercise 3/Exercise 3.sln"
-    
--
-  branches:
-    only:
-      - sem4_ex4
-      
 - 
   branches:
     only:
