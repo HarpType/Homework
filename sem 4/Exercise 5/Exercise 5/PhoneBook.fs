@@ -25,7 +25,6 @@ open System.IO
 
         isPhoneNumberAccum (Seq.toList phoneNumber) 0
 
-
     /// Вставляет запись (имя и телефон) в двоичное дерево. 
     /// Ключ этого дерева -- телефонный номер. Предполагается, что телефонный номер -- 
     /// уникальное значение, имя -- не уникальное.
@@ -45,7 +44,6 @@ open System.IO
             else 
                 Node(phoneRecord, addPhoneRecord leftNode newPhoneRecord, rightNode)
 
-
     /// Находит имя по номеру телефона.
     let rec findByPhoneNumber phoneRecordTree phoneNumber =
         match phoneRecordTree with
@@ -59,12 +57,10 @@ open System.IO
             else
                 findByPhoneNumber leftNode phoneNumber
 
-
     /// Тип, содержащий информацию об обходе дерева в глубину.
     type ContinuationStep =
         | Finished
         | Step of  PhoneRecord * (unit -> ContinuationStep)
-
 
     /// Формирует шаги обхода дерева в глубину.
     let rec linearizePhoneTree phoneRecordTree cont = 
@@ -74,9 +70,7 @@ open System.IO
             Step(record, (fun () -> linearizePhoneTree leftNode (fun () ->
                             linearizePhoneTree rightNode cont)))
 
-    
-    /// Запускает обход дерева в глубину, применяет функцию func 
-    /// к каждой записи в узле. Возвращает последовательность из значений, которая удовлетворяет
+    /// Запускает обход дерева в глубину. Возвращает последовательность из значений, которая удовлетворяет
     /// ограничениям, предоставленные функцией func.
     let iterPhoneTree phoneRecordTree checkFunc =
         let steps = linearizePhoneTree phoneRecordTree (fun () -> Finished)
@@ -92,6 +86,11 @@ open System.IO
 
         processSteps steps
 
+    /// Выводит содержимое базы в консоль.
+    let writeToConsole phoneRecordTree =
+        let seqRecords = iterPhoneTree phoneRecordTree (fun record -> true)
+
+        Seq.iter (fun phoneRecord -> printf "%s %s\n" phoneRecord.Name phoneRecord.PhoneNumber) seqRecords
 
     /// Поиск телефона по имени. Возвращает список всех телефонов, имя записей которых совпадает с указанным.
     let findByName phoneRecordTree name = 
@@ -110,19 +109,13 @@ open System.IO
     /// Выгружает данные из файла.
     let loadPhoneBookFromFile fileName =
         let phoneRecords = File.ReadLines fileName |> Seq.toList
-
-        if phoneRecords.IsEmpty then
-            EmptyNode
-        else 
-            let phoneRecordTree = phoneRecords |> List.map (fun record -> {Name=record.Split('|').[0]; PhoneNumber=record.Split('|').[1]})
+        let phoneRecordTree = phoneRecords |> List.map (fun record -> {Name=record.Split('|').[0]; PhoneNumber=record.Split('|').[1]})
         
-            phoneRecordTree |> Seq.fold (fun accum phoneRecord -> addPhoneRecord accum phoneRecord) EmptyNode
-
-
+        phoneRecordTree |> Seq.fold (fun accum phoneRecord -> addPhoneRecord accum phoneRecord) EmptyNode
 
     /// Функция осуществляет общение с пользователем через консоль.
     let rec stepPhoneBook phoneRecordTree = 
-        printfn "Enter the command (exit, add, find-by-phone, find-by-name, write-to-console, save-to-file, load-from-file):"
+        printfn "Enter the command (exit, add, find-by-phone, find-by-name, show-all, save-to-file, load-from-file):"
         let command = Console.ReadLine()
 
         match command with 
@@ -162,9 +155,13 @@ open System.IO
                 
                 stepPhoneBook phoneRecordTree
             else
-                printfn "There is no this name in the phone book!"
+                printfn "There is no this name in the phone book"
 
                 stepPhoneBook phoneRecordTree
+        | "show-all" ->
+            writeToConsole phoneRecordTree
+
+            stepPhoneBook phoneRecordTree
         | "save-to-file" ->
             printfn "Enter a file name:"
             let fileName = Console.ReadLine()
@@ -180,6 +177,7 @@ open System.IO
                 loadPhoneBookFromFile fileName |> stepPhoneBook
             with
                 | Failure(msg) -> printf "%s" msg; stepPhoneBook phoneRecordTree
+                | :? FileNotFoundException -> printfn "No such file in the directory"; stepPhoneBook phoneRecordTree
 
         | _ -> 
             printfn "Wrong command."

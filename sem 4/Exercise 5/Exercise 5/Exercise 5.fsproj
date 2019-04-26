@@ -10,6 +10,7 @@
     <Compile Include="PhoneBook.fs" />
     <Compile Include="PointFree.fs" />
     <Compile Include="Brackets.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
 </Project>
