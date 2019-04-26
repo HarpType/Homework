@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Lambda Interpreter", "Lambda Interpreter\Lambda Interpreter.fsproj", "{D81B95A0-9971-4087-9DDC-BF5B42F1ED53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D81B95A0-9971-4087-9DDC-BF5B42F1ED53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D81B95A0-9971-4087-9DDC-BF5B42F1ED53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D81B95A0-9971-4087-9DDC-BF5B42F1ED53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D81B95A0-9971-4087-9DDC-BF5B42F1ED53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C960B0B2-2F5B-4D75-A942-9314F4E74C42}
+	EndGlobalSection
+EndGlobal
