@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="RoundingTest.fs" />
+    <Compile Include="StringNumberWorkflowTest.fs" />
+    <Compile Include="RoundingWorkflowTest.fs" />
   </ItemGroup>
 
   <ItemGroup>

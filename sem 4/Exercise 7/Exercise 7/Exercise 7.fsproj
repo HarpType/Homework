@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Rounding.fs" />
+    <Compile Include="StringNumberWorkflow.fs" />
+    <Compile Include="RoundingWorkflow.fs" />
   </ItemGroup>
 
 </Project>
