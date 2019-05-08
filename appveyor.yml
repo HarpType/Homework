@@ -46,4 +46,4 @@ for:
     project: "sem 4/Exercise 6/Exercise 6.sln"
 
   test_script:
-    - dotnet test "sem 6/Exercise 6/Exercise 6.sln"
+    - dotnet test "sem 4/Exercise 6/Exercise 6.sln"
