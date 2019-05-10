@@ -21,3 +21,14 @@ module HashTableTest =
         testHashTable.Delete {Key = 578; Value = "A car washing"}
 
         testHashTable.Contains {Key = 578; Value = "A car washing"} |> should equal false
+
+    [<Test>]
+    let doubledItemTest ()=
+        let testHashTable = HashTable(testFunc)
+
+        testHashTable.Insert {Key = 58; Value = "HelloString"}
+        testHashTable.Insert {Key = 58; Value = "HelloString"}
+
+        testHashTable.Delete {Key = 58; Value = "HelloString"}
+
+        testHashTable.Contains {Key = 58; Value = "HelloString"} |> should equal true

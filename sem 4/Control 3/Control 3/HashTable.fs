@@ -35,8 +35,3 @@
         member this.Delete (item:HashTableItem) = 
             let cellNumber = item.Key |> hashFunc
             table.[cellNumber |> int] <- Remove  table.[cellNumber |> int] item
-            
-
-
-
-            
