@@ -26,10 +26,7 @@
         /// Проверяет, находится ли данный элемент в хеш-таблице.
         member this.Contains (item:HashTableItem) =
             let cellNumber = item.Key |> hashFunc
-            if List.contains item table.[cellNumber |> int] then
-                true
-            else 
-                false
+            List.contains item table.[cellNumber |> int]
 
         /// Удаляет заданный элемент из таблицы (если он находится в нём).
         member this.Delete (item:HashTableItem) = 
