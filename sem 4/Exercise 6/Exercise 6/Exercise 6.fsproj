@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="OperatingSystemInterface.fs" />
+    <Compile Include="OperatingSystem.fs" />
+    <Compile Include="Computer.fs" />
+    <Compile Include="Network.fs" />
   </ItemGroup>
 
 </Project>

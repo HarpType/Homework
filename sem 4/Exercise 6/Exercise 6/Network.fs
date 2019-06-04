@@ -15,7 +15,7 @@ module Network =
             if adjacencyMatrix.Length <> computersCount then
                 failwith "Adjacency matrix exception."
             else
-                for i in 0 .. adjacencyMatrix.Length do
+                for i in 0 .. (adjacencyMatrix.Length - 1) do
                     if adjacencyMatrix.[i].Length <> computersCount then
                         failwith "Adjacency matrix exception."
 
@@ -24,7 +24,7 @@ module Network =
         let adjacencyMatrix = correctAdjacencyMatrix adjacencyMatrix
 
         /// private-метод. Создаёт список всех заражённых компьютеров.
-        let createInjectedList = 
+        let createInfectedList ()= 
             let rec accumCreateInjectedList (injectedList : List<int>) index =
                 if index >= computers.Length then
                     injectedList
@@ -39,7 +39,7 @@ module Network =
         /// private-метод. Моделирует процесс заражения для компьютеров, связанных с главным
         /// по матрице смежности.
         let calculateInfection infectedComputerIndex = 
-            for i in 0 .. adjacencyMatrix.[infectedComputerIndex].Length do
+            for i in 0 .. (adjacencyMatrix.[infectedComputerIndex].Length - 1) do
                 if (adjacencyMatrix.[infectedComputerIndex].[i] = 1) 
                         && (not computers.[i].IsInfected) then
                     let rnd = System.Random()
@@ -51,8 +51,12 @@ module Network =
             with get() = computers
 
         /// Производит шаг моделирования. 
-        member this.Step ()=
-            let injectedList = createInjectedList
+        member this.Step =
+            let infectedList = createInfectedList()
 
-            List.iter (fun (index) -> calculateInfection index) injectedList
+            List.iter (fun (index) -> calculateInfection index) infectedList
+
+        /// Возвращает список инфицированных компьютеров.
+        member this.InfectedComputers =
+            createInfectedList()
 
