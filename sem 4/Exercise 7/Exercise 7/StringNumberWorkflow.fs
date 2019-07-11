@@ -4,7 +4,7 @@
     type StringCalculatorBuilder() =
         member this.Bind(x:string, f) =
             match System.Int32.TryParse(x) with
-            | (true, int) -> x |> f
+            | (true, intX) -> intX |> f
             | _ -> None
         member this.Return(x) =
             Some x

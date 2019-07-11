@@ -7,7 +7,7 @@ module StringNumberWorkflowTest =
     open StringNumberWorkflow
 
     [<Test>]
-    let correctCalculate ()=
+    let correctCalculate () =
         let result = stringCalculator {
                 let! x = "1"
                 let! y = "2"
@@ -17,7 +17,7 @@ module StringNumberWorkflowTest =
         result |> Option.get |> should equal 3
         
     [<Test>]
-    let wrongCalculate ()=
+    let wrongCalculate () =
         let result = stringCalculator {
                 let! x = "1"
                 let! y = "Ъ"
@@ -27,7 +27,7 @@ module StringNumberWorkflowTest =
         result |> should equal None
 
     [<Test>]
-    let worksWithInt ()=
+    let worksWithInt () =
         let result = stringCalculator {
                 let! x = "1."
                 let! y = "2"
@@ -37,7 +37,7 @@ module StringNumberWorkflowTest =
         result |> should equal None
 
     [<Test>]
-    let exceptionTest ()=
+    let exceptionTest () =
         let result () = stringCalculator {
                 let! x = "1"
                 let! y = "0"
@@ -47,7 +47,7 @@ module StringNumberWorkflowTest =
         (fun () -> result () |> ignore) |> should throw typeof<System.DivideByZeroException>
 
     [<Test>]
-    let complicatedTest ()=
+    let complicatedTest () =
         let result = stringCalculator {
                 let! x = "5790"
                 let! y = "89"
