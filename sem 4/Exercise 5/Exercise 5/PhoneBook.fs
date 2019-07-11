@@ -18,7 +18,7 @@ open System.IO
                 match phoneList with
                 | h :: t -> 
                     if (h >= '0') && (h <= '9') then
-                        isPhoneNumberAccum t (i+1)
+                        isPhoneNumberAccum t (i + 1)
                     else 
                         false
                 | [] -> false
@@ -109,7 +109,8 @@ open System.IO
     /// Выгружает данные из файла.
     let loadPhoneBookFromFile fileName =
         let phoneRecords = File.ReadLines fileName |> Seq.toList
-        let phoneRecordTree = phoneRecords |> List.map (fun record -> {Name=record.Split('|').[0]; PhoneNumber=record.Split('|').[1]})
+        let phoneRecordTree = phoneRecords |> List.map (fun record -> record.Split('|')) 
+                            |> List.map (fun record -> {Name=record.[0]; PhoneNumber=record.[1]})
         
         phoneRecordTree |> Seq.fold (fun accum phoneRecord -> addPhoneRecord accum phoneRecord) EmptyNode
 

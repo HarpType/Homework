@@ -39,10 +39,7 @@
                     else 
                         checkBracketsWithStack t stack
                 | [] -> 
-                    if stack.IsEmpty then
-                        true
-                    else
-                        false
+                    stack.IsEmpty
 
             checkBracketsWithStack (Seq.toList bracketsString) []
 
