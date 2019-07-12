@@ -6,43 +6,40 @@ module Network =
 
     /// Класс моделирует работу сети.
     type Network(computers : array<Computer>, adjacencyMatrix : array<array<int>>) =
-        let mutable computers = computers
-
-        let mutable computersCount = computers.Length
 
         /// Проверяет матрицу смежности на корректность
-        let correctAdjacencyMatrix (adjacencyMatrix : array<array<int>>) =
-            if adjacencyMatrix.Length <> computersCount then
+        let checkAdjacencyMatrix (adjacencyMatrix : array<array<int>>) =
+            if adjacencyMatrix.Length <> computers.Length then
                 failwith "Adjacency matrix exception."
             else
                 for i in 0 .. (adjacencyMatrix.Length - 1) do
-                    if adjacencyMatrix.[i].Length <> computersCount then
+                    if adjacencyMatrix.[i].Length <> computers.Length then
                         failwith "Adjacency matrix exception."
 
                 adjacencyMatrix
 
-        let adjacencyMatrix = correctAdjacencyMatrix adjacencyMatrix
+        let adjacencyMatrix = checkAdjacencyMatrix adjacencyMatrix
 
         /// private-метод. Создаёт список всех заражённых компьютеров.
-        let createInfectedList ()= 
-            let rec accumCreateInjectedList (injectedList : List<int>) index =
+        let createInfectedList () = 
+            let rec accumCreateInfectedList (infectedList : List<int>) index =
                 if index >= computers.Length then
-                    injectedList
+                    infectedList
                 else 
                     if computers.[index].IsInfected then
-                        accumCreateInjectedList (index :: injectedList) (index + 1)
+                        accumCreateInfectedList (index :: infectedList) (index + 1)
                     else
-                        accumCreateInjectedList injectedList (index + 1)
+                        accumCreateInfectedList infectedList (index + 1)
 
-            accumCreateInjectedList [] 0
+            accumCreateInfectedList [] 0
 
         /// private-метод. Моделирует процесс заражения для компьютеров, связанных с главным
         /// по матрице смежности.
         let calculateInfection infectedComputerIndex = 
+            let rnd = System.Random()
             for i in 0 .. (adjacencyMatrix.[infectedComputerIndex].Length - 1) do
                 if (adjacencyMatrix.[infectedComputerIndex].[i] = 1) 
                         && (not computers.[i].IsInfected) then
-                    let rnd = System.Random()
                     let randomNumber = rnd.Next(0, 99)
                     if computers.[i].OperatingSystem.InfectionChance > randomNumber then
                         computers.[i].IsInfected <- true
