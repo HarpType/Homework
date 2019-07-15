@@ -34,7 +34,7 @@
 
     // Скачивает все веб-страницы, на которые указывает сайт и предоставляет 
     // информацию о их размерах (в массиве).
-    let printSitesInfo url =
+    let getSitesInfo url =
         let html = getSiteData url
         match html with
         | Some(data) -> 
@@ -44,8 +44,8 @@
 
             siteSeq |> Seq.map (fun site -> site |> fetchSiteSizeAsync) 
                     |> Async.Parallel |> Async.RunSynchronously 
-                    |> Seq.filter(fun optionSiteInfo -> optionSiteInfo.IsSome)
-                    |> Seq.map(fun optionSiteInfo -> optionSiteInfo.Value)
+                    |> Array.filter(fun optionSiteInfo -> optionSiteInfo.IsSome)
+                    |> Array.map(fun optionSiteInfo -> optionSiteInfo.Value)
                     |> Some
         | None -> None
             
