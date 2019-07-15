@@ -20,6 +20,14 @@ for:
     only:
       - sem4_ex4
       
+  before_build:
+    - nuget restore "sem 4/Exercise 4/Lambda Interpreter/Lambda Interpreter.sln"
+    
+  build:
+    project: "sem 4/Exercise 4/Lambda Interpreter/Lambda Interpreter.sln"
+    
+  test_script:
+    - dotnet test "sem 4/Exercise 4/Lambda Interpreter/Lambda Interpreter.sln"
 - 
   branches:
     only:
@@ -33,7 +41,6 @@ for:
 
   test_script:
     - dotnet test "sem 4/Exercise 5/Exercise 5.sln"
-    
 - 
   branches:
     only:
@@ -47,3 +54,4 @@ for:
 
   test_script:
     - dotnet test "sem 4/Exercise 6/Exercise 6.sln"
+    
