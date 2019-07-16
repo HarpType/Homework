@@ -18,8 +18,11 @@ module NetworkTest =
         comp1.IsInfected <- true
 
         /// Компьютеры объединены в цепочку от первого заражённого.
-        let network = Network([|comp1; comp2; comp3; comp4|], 
-                        [|[|0; 1; 0; 0|]; [|1; 0; 1; 0|]; [|0; 1; 0; 1|]; [|0; 0; 1; 0|]|])
+        let network = Network(  [|comp1; comp2; comp3; comp4|], 
+                                [|[|0; 1; 0; 0|]; 
+                                [|1; 0; 1; 0|]; 
+                                [|0; 1; 0; 1|];     
+                                [|0; 0; 1; 0|]|])
 
         for i in 2 .. 4 do
             network.Step
@@ -36,8 +39,11 @@ module NetworkTest =
         comp1.IsInfected <- true
 
         /// Компьютеры объединены каждый с каждым, один компьютер заражён.
-        let network = Network([|comp1; comp2; comp3; comp4|], 
-                        [|[|0; 1; 1; 1|]; [|1; 0; 1; 1|]; [|1; 1; 0; 1|]; [|1; 1; 1; 0|]|])
+        let network = Network(  [|comp1; comp2; comp3; comp4|], 
+                                [|[|0; 1; 1; 1|];
+                                [|1; 0; 1; 1|]; 
+                                [|1; 1; 0; 1|]; 
+                                [|1; 1; 1; 0|]|])
 
         for _ in 1 .. 100 do
             network.Step

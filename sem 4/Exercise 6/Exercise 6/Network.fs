@@ -18,7 +18,9 @@ module Network =
 
                 adjacencyMatrix
 
-        let adjacencyMatrix = checkAdjacencyMatrix adjacencyMatrix
+        let adjacencyMatrix = 
+            do (checkAdjacencyMatrix adjacencyMatrix |> ignore)
+            adjacencyMatrix
 
         /// private-метод. Создаёт список всех заражённых компьютеров.
         let createInfectedList () = 
@@ -33,10 +35,11 @@ module Network =
 
             accumCreateInfectedList [] 0
 
+        let rnd = System.Random()
+    
         /// private-метод. Моделирует процесс заражения для компьютеров, связанных с главным
         /// по матрице смежности.
         let calculateInfection infectedComputerIndex = 
-            let rnd = System.Random()
             for i in 0 .. (adjacencyMatrix.[infectedComputerIndex].Length - 1) do
                 if (adjacencyMatrix.[infectedComputerIndex].[i] = 1) 
                         && (not computers.[i].IsInfected) then
