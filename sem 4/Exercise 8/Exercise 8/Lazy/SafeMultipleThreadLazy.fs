@@ -24,7 +24,9 @@ module SafeMultipleThreadLazy =
             // Реализация метода ленивого вычисления.
             // Гарантирует корректную работу в многопоточном режиме.
             member this.Get () =
-                if Volatile.Read(ref isHasValue) |> not then
+                if Volatile.Read(ref isHasValue) then
+                    optionValue.Value
+                else
                     lock monitor (fun () -> 
                         if Volatile.Read(ref isHasValue) |> not then
                             do optionValue <- Some(supplier())
@@ -33,5 +35,3 @@ module SafeMultipleThreadLazy =
                         else
                             optionValue.Value
                     )
-                else
-                    optionValue.Value

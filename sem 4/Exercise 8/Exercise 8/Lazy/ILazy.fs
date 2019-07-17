@@ -8,6 +8,3 @@ module ILazy =
 
         // Вычисляет и предоставляет результат ленивого вычисления.
         abstract member Get: unit -> 'a
-
-
-
