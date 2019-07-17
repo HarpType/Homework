@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="LazyTest.fs" />
     <Compile Include="SitesSizeTest.fs" />
   </ItemGroup>
 
