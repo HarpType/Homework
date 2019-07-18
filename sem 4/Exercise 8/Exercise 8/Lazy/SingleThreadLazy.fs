@@ -16,8 +16,6 @@ module SingleThreadLazy =
 
         interface ILazy<'a> with
 
-            member this.value = null
-
             // Реализация абстрактного метода для однопоточного ленивого вычисления.
             member this.Get () =
                 match optionValue with
