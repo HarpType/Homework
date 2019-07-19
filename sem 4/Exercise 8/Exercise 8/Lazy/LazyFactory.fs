@@ -7,7 +7,6 @@ module LazyFactory =
     open SingleThreadLazy
     open SafeMultipleThreadLazy
     open LockFreeMultipleThreadLazy
-    open ILazy
 
     // Класс создаёт объекты ленивых вычислений.
     type LazyFactory =
