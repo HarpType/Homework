@@ -1,9 +1,5 @@
 ﻿namespace Lazy
 
-module SingleThreadLazy =
-
-    open ILazy
-
     // Описывает работу однопоточных ленивых вычислений.
     // 'a -- тип, возвращаемый ленивым вычислением.
     // supplier -- лямбда-функция, лежащая в основе ленивого вычисления.
@@ -12,7 +8,7 @@ module SingleThreadLazy =
         // Хранит информацию о вычислении лямбда-функции supplier.
         // Имеет значение None до вычисления лямбда-функции и вычисленное значение,
         // обёрнутое в Some после.
-        let mutable (optionValue: option<'a>) = None
+        let mutable optionValue: option<'a> = None
 
         interface ILazy<'a> with
 

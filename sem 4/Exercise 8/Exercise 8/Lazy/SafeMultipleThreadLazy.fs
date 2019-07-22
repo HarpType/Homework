@@ -1,9 +1,6 @@
 ﻿namespace Lazy
 
-module SafeMultipleThreadLazy =
-
     open System.Threading
-    open ILazy
 
     // Описывает работу многопоточных ленивых вычислений.
     // 'a -- тип, возвращаемый ленивым вычислением.
@@ -14,21 +11,21 @@ module SafeMultipleThreadLazy =
 
         // Если значение ленивого вычисления уже найдено, то равен true,
         // false в противном случае.
-        let mutable isHasValue = false
+        let mutable hasValue = false
 
         // Хранит информацию о вычислении лямбда-функции.
-        let mutable (optionValue: option<'a>) = None
+        let mutable optionValue: option<'a> = None
 
         interface ILazy<'a> with
 
             // Реализация метода ленивого вычисления.
             // Гарантирует корректную работу в многопоточном режиме.
             member this.Get () =
-                if Volatile.Read(ref isHasValue) |> not then
+                if Volatile.Read(ref hasValue) |> not then
                      lock monitor (fun () -> 
-                        if Volatile.Read(ref isHasValue) |> not then
+                        if Volatile.Read(ref hasValue) |> not then
                             do optionValue <- Some(supplier())
-                            do isHasValue <- true
+                            do hasValue <- true
                     )
 
                 optionValue.Value

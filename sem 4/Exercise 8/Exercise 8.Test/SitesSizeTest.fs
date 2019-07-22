@@ -33,7 +33,12 @@ module SitesSizeTest
 
         let regex = new Regex(expression)
         let mutable m = regex.Match testString
-        let siteSeq = [while (m.Success) do yield m.Groups.[1].ToString(); m <- m.NextMatch()]
+        let siteSeq = 
+            [
+                while (m.Success) do 
+                    yield m.Groups.[1].ToString()
+                    m <- m.NextMatch()
+            ]
 
         siteSeq.Length |> should equal 3
         siteSeq.[0] |> should equal "http://www.example1.org"

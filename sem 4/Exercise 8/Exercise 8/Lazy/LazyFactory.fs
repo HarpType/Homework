@@ -1,13 +1,5 @@
 ﻿namespace Lazy
 
-module LazyFactory =
-
-    open Lazy
-    
-    open SingleThreadLazy
-    open SafeMultipleThreadLazy
-    open LockFreeMultipleThreadLazy
-
     // Класс создаёт объекты ленивых вычислений.
     type LazyFactory =
 

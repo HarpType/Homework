@@ -1,8 +1,5 @@
 ﻿namespace Lazy
 
-module LockFreeMultipleThreadLazy =
-
-    open ILazy
     open System.Threading
 
     // Описывает работу lock-free многопоточных ленивых вычислений.
