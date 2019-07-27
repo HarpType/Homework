@@ -69,3 +69,16 @@ for:
   test_script:
     - dotnet test "sem 4/Exercise 6/Exercise 6.sln"
 
+- 
+  branches:
+    only:
+      - sem4_ex8
+
+  before_build:
+    - nuget restore "sem 4/Exercise 8/Exercise 8.sln"
+
+  build:
+    project: "sem 4/Exercise 8/Exercise 8.sln"
+
+  test_script:
+    - dotnet test "sem 4/Exercise 8/Exercise 8.sln"

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>Exercise_8</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Lazy\ILazy.fs" />
+    <Compile Include="Lazy\LockFreeMultipleThreadLazy.fs" />
+    <Compile Include="Lazy\SingleThreadLazy.fs" />
+    <Compile Include="Lazy\SafeMultipleThreadLazy.fs" />
+    <Compile Include="Lazy\LazyFactory.fs" />
+    <Compile Include="SitesSize.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsUnit" Version="3.4.0" />
+  </ItemGroup>
+
+</Project>
