@@ -15,20 +15,20 @@
         | Abstraction(_) -> true
         | _ -> false
 
-    /// Выполняет бета-редукцию согласно нормальной стратегии
+    /// Выполняет бета-редукцию согласно нормальной стратегии.
+    /// Возвращает Some(term), если бета-редукция прошла успешно,
+    /// None в случае, если применение бета-редукции не имеет смысла. 
     let rec normalBetaReductionStep term = 
         match term with 
         | Application(leftTerm, rightTerm) -> 
             if isRedex leftTerm rightTerm then
                 betaReduction leftTerm rightTerm |> Some
             else
-                let leftStep = normalBetaReductionStep leftTerm
-                match leftStep with
+                match normalBetaReductionStep leftTerm with
                 | Some(modifiedLeftTerm) -> 
                     Application(modifiedLeftTerm, rightTerm) |> Some
                 | None -> 
-                    let rightStep = normalBetaReductionStep rightTerm
-                    match rightStep with
+                    match normalBetaReductionStep rightTerm with
                     | Some(modifiedRightTerm) -> 
                         Application(leftTerm, modifiedRightTerm) |> Some
                     | None -> None
