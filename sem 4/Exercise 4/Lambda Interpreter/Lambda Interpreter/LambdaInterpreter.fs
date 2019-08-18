@@ -24,6 +24,7 @@ open System
             if leftVariable = changedVariable then
                 leftTerm
             else
+                /// TODO: alpha-conversion
                 substitute leftTerm rightTerm changedVariable
 
 
