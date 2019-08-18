@@ -1,13 +1,40 @@
 ﻿module LambdaInterpreter
 
+open System
+
     /// Описывает структуру лямбда-терма
     type LambdaTerm = 
         | Variable of char
         | Application of LambdaTerm * LambdaTerm
         | Abstraction of char * LambdaTerm
 
+    /// Подставляет в терм leftTerm терм rightTerm вместо всех свободных
+    /// вхождений переменной changedVariable согласно правилам.
+    let rec substitute leftTerm rightTerm changedVariable =
+        match leftTerm with
+        | Variable(leftVariable) ->
+            if changedVariable = leftVariable then
+                rightTerm
+            else Variable(leftVariable)
+        | Application(leftTerm1, leftTerm2) ->
+            let newTerm1 = changedVariable |> (rightTerm |> (leftTerm1 |> substitute))
+            let newTerm2 = changedVariable |> (rightTerm |> (leftTerm2 |> substitute))
+            Application(newTerm1, newTerm2)
+        | Abstraction(leftVariable, leftTerm) ->
+            if leftVariable = changedVariable then
+                leftTerm
+            else
+                substitute leftTerm rightTerm changedVariable
+
+
+
+    /// Выполняет бета-редукцию на конкретных термах.
+    /// Предполагается, что левый терм -- абстракция.
     let betaReduction leftTerm rightTerm =
-        Variable('t')
+        match leftTerm with
+        | Abstraction(variable, term) ->
+            substitute term rightTerm variable
+        | _ -> failwith "Left term should be an abstraction."
 
     /// Определяет, является ли пара термов редэксом.
     let isRedex leftTerm rightTerm =
