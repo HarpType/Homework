@@ -89,10 +89,10 @@ for:
       - lambda_calculus
 
   before_build:
-    - nuget restore "sem 4/Lambda Interpreter/Lambda Interpreter.sln"
+    - nuget restore "sem 4/Exercise 4/Lambda Interpreter/Lambda Interpreter.sln"
 
   build:
-    project: "sem 4/Lambda Interpreter/Lambda Interpreter.sln"
+    project: "sem 4/Exercise 4/Lambda Interpreter/Lambda Interpreter.sln"
 
   test_script:
-    - dotnet test "sem 4/Lambda Interpreter/Lambda Interpreter.sln"
+    - dotnet test "sem 4/Exercise 4/Lambda Interpreter/Lambda Interpreter.sln"
