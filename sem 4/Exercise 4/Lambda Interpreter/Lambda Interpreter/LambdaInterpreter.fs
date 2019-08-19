@@ -26,11 +26,35 @@
 
     /// Возвращает новый символ, которого нет в заданном множестве.
     let getNewCharacter charSet =
-        'a'
+        let rec recGetNewCharacter charSet accumChar =
+            if Set.contains accumChar charSet then
+                if accumChar = 'z' then
+                    failwith "Cannot find a new character"
+                else 
+                    recGetNewCharacter charSet (char ((int accumChar) + 1))
+            else
+                accumChar
+
+        recGetNewCharacter charSet 'a'
 
     /// Производит альфа-конверсию над заданным термом.
     let alphaConversion term oldVariable newVariable = 
-        Variable('a')
+        let rec recAlphaConversion tempTerm =
+            match tempTerm with
+            | Variable(variable) ->
+                if variable = oldVariable then
+                    Variable(newVariable)
+                else 
+                    tempTerm
+            | Application(leftTerm, rightTerm) ->
+                Application(recAlphaConversion leftTerm, recAlphaConversion rightTerm)
+            | Abstraction(absVariable, absTerm) ->
+                if absVariable = oldVariable then
+                    Abstraction(newVariable, recAlphaConversion absTerm)
+                else
+                    Abstraction(absVariable, recAlphaConversion absTerm)
+
+        recAlphaConversion term
 
     /// Подставляет в терм leftTerm терм rightTerm вместо всех свободных
     /// вхождений переменной changedVariable согласно правилам.
