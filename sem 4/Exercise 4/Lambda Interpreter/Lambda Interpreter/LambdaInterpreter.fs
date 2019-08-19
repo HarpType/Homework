@@ -1,32 +1,65 @@
 ﻿module LambdaInterpreter
 
-open System
-
     /// Описывает структуру лямбда-терма
     type LambdaTerm = 
         | Variable of char
         | Application of LambdaTerm * LambdaTerm
         | Abstraction of char * LambdaTerm
 
+    /// Возвращает список всех свободных переменных в терме.
+    let getFreeVariables term =
+        let rec recGetFreeVariables tempTerm accumBoundVariables accumFreeVariables = 
+            match tempTerm with
+            | Variable(variable) ->
+                if Set.contains variable accumBoundVariables then
+                    accumFreeVariables
+                else 
+                    Set.add variable accumFreeVariables
+            | Application(leftTerm, rightTerm) ->
+                /// WARNING: awful code here
+                Set.union (recGetFreeVariables leftTerm accumBoundVariables accumFreeVariables) 
+                            (recGetFreeVariables rightTerm accumBoundVariables accumFreeVariables)
+            | Abstraction(variable, term) ->
+                recGetFreeVariables term (Set.add variable accumBoundVariables) accumFreeVariables
+
+        recGetFreeVariables term Set.empty Set.empty
+
+    /// Возвращает новый символ, которого нет в заданном множестве.
+    let getNewCharacter charSet =
+        'a'
+
+    /// Производит альфа-конверсию над заданным термом.
+    let alphaConversion term oldVariable newVariable = 
+        Variable('a')
+
     /// Подставляет в терм leftTerm терм rightTerm вместо всех свободных
     /// вхождений переменной changedVariable согласно правилам.
-    let rec substitute leftTerm rightTerm changedVariable =
-        match leftTerm with
+    /// whereSubsTerm -- в какой терм вставлять.
+    /// whatSubsTerm -- что за терм вставлять.
+    /// insteadOfVariable -- взамен какой переменной вставлять терм.
+    let rec substitute whereSubsTerm whatSubsTerm insteadOfVariable =
+        match whereSubsTerm with
         | Variable(leftVariable) ->
-            if changedVariable = leftVariable then
-                rightTerm
+            if insteadOfVariable = leftVariable then
+                whatSubsTerm
             else Variable(leftVariable)
-        | Application(leftTerm1, leftTerm2) ->
-            let newTerm1 = changedVariable |> (rightTerm |> (leftTerm1 |> substitute))
-            let newTerm2 = changedVariable |> (rightTerm |> (leftTerm2 |> substitute))
+        | Application(leftApplTerm, rightApplTerm) ->
+            /// Warning: awful code here
+            let newTerm1 = insteadOfVariable |> (whatSubsTerm |> (leftApplTerm |> substitute))
+            let newTerm2 = insteadOfVariable |> (whatSubsTerm |> (rightApplTerm |> substitute))
             Application(newTerm1, newTerm2)
-        | Abstraction(leftVariable, leftTerm) ->
-            if leftVariable = changedVariable then
-                leftTerm
+        | Abstraction(absVariable, absTerm) ->
+            if absVariable = insteadOfVariable then
+                whereSubsTerm
             else
-                /// TODO: alpha-conversion
-                substitute leftTerm rightTerm changedVariable
+                let absTermFreeVarSet = getFreeVariables absTerm
+                let rightTermFreeVarSet = getFreeVariables whatSubsTerm
 
+                if (Set.contains absVariable rightTermFreeVarSet) && (Set.contains insteadOfVariable absTermFreeVarSet) then
+                    let newVariable = getNewCharacter (Set.union absTermFreeVarSet rightTermFreeVarSet)
+                    Abstraction(newVariable, insteadOfVariable |> (whatSubsTerm |> (alphaConversion absTerm absVariable newVariable |> substitute)))
+                else
+                    Abstraction(absVariable, substitute absTerm whatSubsTerm insteadOfVariable)
 
 
     /// Выполняет бета-редукцию на конкретных термах.
