@@ -8,7 +8,9 @@ module LambdaInterpreter =
     [<Test>]
     let simpleTest () =
         /// (λx.x y) z -> z y
-        let simpleLambdaTerm = Application(Abstraction('x', Application(Variable('x'), Variable('y'))), Variable('z'))
+        let simpleLambdaTerm = Application( 
+                                Abstraction('x', Application(Variable('x'), Variable('y'))), 
+                                Variable('z'))
         
         simpleLambdaTerm |> normalBetaReductionStep |> Option.get 
                 |> should equal (Application(Variable('z'), Variable('y')))
@@ -21,15 +23,18 @@ module LambdaInterpreter =
                                         Abstraction('x', Application(Variable('x'), Variable('y'))))
 
         termForAlphaConversion |> normalBetaReductionStep |> Option.get 
-                |> should equal (Abstraction('a', Application(Abstraction('x', Application(Variable('x'), Variable('y'))), 
+                |> should equal (Abstraction('a', Application(Abstraction('x', Application(Variable('x'), 
+                                                                                            Variable('y'))), 
                                                                 Variable('a'))))
 
     [<Test>]
     let ``S K K = I`` () =
         let SKKTerm = Application(
                         Application(
-                            Abstraction('x', Abstraction('y', Abstraction('z', Application(Application(Variable('x'), Variable('z')), 
-                                                                                        Application(Variable('y'), Variable('z')))))),
+                            Abstraction('x', 
+                                Abstraction('y', 
+                                    Abstraction('z', Application(Application(Variable('x'), Variable('z')), 
+                                                                    Application(Variable('y'), Variable('z')))))),
                             Abstraction('x', Abstraction('y', Variable('x')))),
                         Abstraction('x', Abstraction('y', Variable('x'))))
         

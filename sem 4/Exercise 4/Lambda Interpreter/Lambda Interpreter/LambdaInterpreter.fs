@@ -1,5 +1,7 @@
 ﻿module LambdaInterpreter
 
+open System
+
     /// Описывает структуру лямбда-терма
     type LambdaTerm = 
         | Variable of char
@@ -8,6 +10,7 @@
 
     /// Возвращает список всех свободных переменных в терме.
     let getFreeVariables term =
+        /// Рекурсивно обходит терм, аккумулируя множество свободных и связанных переменных.
         let rec recGetFreeVariables tempTerm accumBoundVariables accumFreeVariables = 
             match tempTerm with
             | Variable(variable) ->
@@ -16,29 +19,30 @@
                 else 
                     Set.add variable accumFreeVariables
             | Application(leftTerm, rightTerm) ->
-                /// WARNING: awful code here
-                Set.union (recGetFreeVariables leftTerm accumBoundVariables accumFreeVariables) 
-                            (recGetFreeVariables rightTerm accumBoundVariables accumFreeVariables)
+                let startNextStep term = term |> recGetFreeVariables <| accumBoundVariables <| accumFreeVariables
+
+                Set.union (leftTerm |> startNextStep) (rightTerm |> startNextStep)
             | Abstraction(variable, term) ->
                 recGetFreeVariables term (Set.add variable accumBoundVariables) accumFreeVariables
 
         recGetFreeVariables term Set.empty Set.empty
 
-    /// Возвращает новый символ, которого нет в заданном множестве.
-    let getNewCharacter charSet =
-        let rec recGetNewCharacter charSet accumChar =
-            if Set.contains accumChar charSet then
-                if accumChar = 'z' then
+    /// Возвращает имя новой переменной, которой нет в заданном множестве.
+    let getNewVariableName variableNameSet =
+        let rec recGetNewVariableName accumVariableName =
+            if Set.contains accumVariableName variableNameSet then
+                if accumVariableName = 'z' then
                     failwith "Cannot find a new character"
                 else 
-                    recGetNewCharacter charSet (char ((int accumChar) + 1))
+                    recGetNewVariableName (char ((int accumVariableName) + 1))
             else
-                accumChar
+                accumVariableName
 
-        recGetNewCharacter charSet 'a'
+        recGetNewVariableName 'a'
 
     /// Производит альфа-конверсию над заданным термом.
     let alphaConversion term oldVariable newVariable = 
+        /// Рекурсивно заменяет старую переменную на новую там, где это необходимо.
         let rec recAlphaConversion tempTerm =
             match tempTerm with
             | Variable(variable) ->
@@ -47,7 +51,7 @@
                 else 
                     tempTerm
             | Application(leftTerm, rightTerm) ->
-                Application(recAlphaConversion leftTerm, recAlphaConversion rightTerm)
+                Application(leftTerm |> recAlphaConversion, rightTerm |> recAlphaConversion)
             | Abstraction(absVariable, absTerm) ->
                 if absVariable = oldVariable then
                     Abstraction(newVariable, recAlphaConversion absTerm)
@@ -63,15 +67,14 @@
     /// insteadOfVariable -- взамен какой переменной вставлять терм.
     let rec substitute whereSubsTerm whatSubsTerm insteadOfVariable =
         match whereSubsTerm with
-        | Variable(leftVariable) ->
-            if insteadOfVariable = leftVariable then
+        | Variable(variable) ->
+            if insteadOfVariable = variable then
                 whatSubsTerm
-            else Variable(leftVariable)
-        | Application(leftApplTerm, rightApplTerm) ->
-            /// Warning: awful code here
-            let newTerm1 = insteadOfVariable |> (whatSubsTerm |> (leftApplTerm |> substitute))
-            let newTerm2 = insteadOfVariable |> (whatSubsTerm |> (rightApplTerm |> substitute))
-            Application(newTerm1, newTerm2)
+            else Variable(variable)
+        | Application(leftTerm, rightTerm) ->
+            let getNewTerm whereSubsTerm = whereSubsTerm |> substitute <| whatSubsTerm <| insteadOfVariable
+
+            Application(leftTerm |> getNewTerm, rightTerm |> getNewTerm)
         | Abstraction(absVariable, absTerm) ->
             if absVariable = insteadOfVariable then
                 whereSubsTerm
@@ -80,7 +83,7 @@
                 let rightTermFreeVarSet = getFreeVariables whatSubsTerm
 
                 if (Set.contains absVariable rightTermFreeVarSet) && (Set.contains insteadOfVariable absTermFreeVarSet) then
-                    let newVariable = getNewCharacter (Set.union absTermFreeVarSet rightTermFreeVarSet)
+                    let newVariable = getNewVariableName (Set.union absTermFreeVarSet rightTermFreeVarSet)
                     Abstraction(newVariable, insteadOfVariable |> (whatSubsTerm |> (alphaConversion absTerm absVariable newVariable |> substitute)))
                 else
                     Abstraction(absVariable, substitute absTerm whatSubsTerm insteadOfVariable)
@@ -100,11 +103,12 @@
         | Abstraction(_) -> true
         | _ -> false
 
-    /// Выполняет бета-редукцию согласно нормальной стратегии.
+    /// Выполняет шаг бета-редукции согласно нормальной стратегии.
     /// Возвращает Some(term), если бета-редукция прошла успешно,
     /// None в случае, если применение бета-редукции не имеет смысла. 
     let rec normalBetaReductionStep term = 
         match term with 
+        | Variable(_) -> None
         | Application(leftTerm, rightTerm) -> 
             if isRedex leftTerm rightTerm then
                 betaReduction leftTerm rightTerm |> Some
@@ -117,9 +121,8 @@
                     | Some(modifiedRightTerm) -> 
                         Application(leftTerm, modifiedRightTerm) |> Some
                     | None -> None
-        | Abstraction(variable, term) ->
-            match normalBetaReductionStep term with
+        | Abstraction(absVariable, absTerm) ->
+            match normalBetaReductionStep absTerm with
             | Some(modifiedTerm) ->
-                Abstraction(variable, modifiedTerm) |> Some
+                Abstraction(absVariable, modifiedTerm) |> Some
             | None -> None
-        | Variable(_) -> None 
