@@ -41,3 +41,12 @@ module LambdaInterpreter =
 
         /// Нормальная форма уже достигнута, следующий шаг возвращает None.
         checkTerm |> normalBetaReductionStep |> should equal None
+
+    [<Test>]
+    let ``K I = K*`` () =
+        let KITerm = Application(
+                        Abstraction('x', Abstraction('y', Variable('x'))),
+                        Abstraction('x', Variable('x')))
+
+        KITerm |> normalBetaReductionStep |> Option.get 
+                |> should equal (Abstraction('y', Abstraction('x', Variable('x'))))
