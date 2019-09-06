@@ -29,7 +29,7 @@ module LambdaInterpreter =
 
     [<Test>]
     let ``S K K = I`` () =
-        let SKKTerm = Application(
+        let sKKTerm = Application(
                         Application(
                             Abstraction('x', 
                                 Abstraction('y', 
